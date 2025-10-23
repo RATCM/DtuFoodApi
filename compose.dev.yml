@@ -1,0 +1,12 @@
+name: dtu-food-dev
+services:
+  authdb:
+    container_name: "dtu-food-db"
+    image: postgres:15
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: DtuFoodDb
+      PGPORT: 5432
+    ports:
+      - "5432:5432"
