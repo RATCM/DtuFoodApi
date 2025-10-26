@@ -4,7 +4,7 @@ The development container currently only contains
 a postgresql database. To set it up, make sure you
 have docker installed and running, and then run the
 following command in the terminal from the root of the
-application
+application.
 ```shell
 
 docker compose -f compose.dev.yml up -d
