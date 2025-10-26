@@ -1,6 +1,7 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
+using DtuFoodAPI.Services;
 
 namespace DtuFoodAPI.Services;
 
@@ -19,12 +20,25 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<FoodTruck> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+
+        var newTruck = new FoodTruck
+        {
+            Id = _guidGenerator.NewGuid(),
+            Name = foodTruckRegistry.Name,
+            GPSLatitude = foodTruckRegistry.GpsLatitude,
+            GPSLongitude = foodTruckRegistry.GpsLongitude,
+        };
+
+        _dbContext.FoodTrucks.Add(newTruck);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return newTruck;
     }
 
     public async Task<List<FoodTruck>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+
+        //throw new NotImplementedException();
     }
 
     public async Task<FoodTruck?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default)

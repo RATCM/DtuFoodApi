@@ -1,6 +1,7 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
+using DtuFoodAPI.Services;
 
 namespace DtuFoodAPI.Controllers;
 
@@ -9,15 +10,19 @@ namespace DtuFoodAPI.Controllers;
 public class FoodTruckController : ControllerBase
 {
     private readonly ILogger<FoodTruckController> _logger;
+    private readonly FoodTruckService _foodTruckService;
+
     public FoodTruckController(ILogger<FoodTruckController> logger)
     {
         _logger = logger;
+        _foodTruckService = new FoodTruckService();
     }
     
     [HttpGet]
     public async Task<IActionResult> GetAllFoodTrucks()
     {
-        throw new NotImplementedException();
+        _foodTruckService.GetAllFoodTrucks();
+        // throw new NotImplementedException();
     }
     
     [HttpGet("{id}")]
@@ -29,7 +34,8 @@ public class FoodTruckController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateFoodTruck([FromBody] FoodTruckRegistry foodTruck)
     {
-        throw new NotImplementedException();
+        _foodTruckService.CreateFoodTruck(foodTruck);
+        //throw new NotImplementedException();
     }
     
     [HttpPut("{id}")]
