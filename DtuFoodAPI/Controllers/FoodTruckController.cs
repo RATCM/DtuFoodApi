@@ -12,17 +12,17 @@ public class FoodTruckController : ControllerBase
     private readonly ILogger<FoodTruckController> _logger;
     private readonly FoodTruckService _foodTruckService;
 
-    public FoodTruckController(ILogger<FoodTruckController> logger)
+    public FoodTruckController(ILogger<FoodTruckController> logger, FoodTruckService foodTruckService)
     {
         _logger = logger;
-        _foodTruckService = new FoodTruckService();
+        _foodTruckService = foodTruckService;
     }
     
     [HttpGet]
     public async Task<IActionResult> GetAllFoodTrucks()
     {
-        _foodTruckService.GetAllFoodTrucks();
-        // throw new NotImplementedException();
+        throw new NotImplementedException();
+        return Ok(await _foodTruckService.GetAllFoodTrucks());
     }
     
     [HttpGet("{id}")]
@@ -34,8 +34,7 @@ public class FoodTruckController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateFoodTruck([FromBody] FoodTruckRegistry foodTruck)
     {
-        _foodTruckService.CreateFoodTruck(foodTruck);
-        //throw new NotImplementedException();
+        return Ok(await _foodTruckService.CreateFoodTruck(foodTruck));
     }
     
     [HttpPut("{id}")]

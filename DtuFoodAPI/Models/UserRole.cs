@@ -3,5 +3,6 @@ namespace DtuFoodAPI.Models;
 public enum UserRole
 {
     Manager,
-    Admin
+    Admin,
+    viggo999
 }

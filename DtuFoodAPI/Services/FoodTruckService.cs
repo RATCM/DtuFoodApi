@@ -21,24 +21,28 @@ public class FoodTruckService : IFoodTruckService
     public async Task<FoodTruck> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
 
-        var newTruck = new FoodTruck
+        var newTruck = new FoodTruck()
         {
             Id = _guidGenerator.NewGuid(),
             Name = foodTruckRegistry.Name,
-            GPSLatitude = foodTruckRegistry.GpsLatitude,
-            GPSLongitude = foodTruckRegistry.GpsLongitude,
+            GpsLatitude = foodTruckRegistry.GpsLatitude,
+            GpsLongitude = foodTruckRegistry.GpsLongitude,
+            Products = new List<Product>(),
+            Availability = new List<Availability>(),
+            Managers = new List<User>()
         };
+        
+        var result = await _dbContext.FoodTrucks.AddAsync(newTruck, cancellationToken: cancellationToken);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
 
-        _dbContext.FoodTrucks.Add(newTruck);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return newTruck;
+        return result.Entity;
     }
 
     public async Task<List<FoodTruck>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
     {
 
-        //throw new NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public async Task<FoodTruck?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default)
