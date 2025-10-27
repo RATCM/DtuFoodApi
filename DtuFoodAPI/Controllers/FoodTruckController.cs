@@ -21,20 +21,26 @@ public class FoodTruckController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllFoodTrucks()
     {
-        throw new NotImplementedException();
         return Ok(await _foodTruckService.GetAllFoodTrucks());
     }
     
     [HttpGet("{id}")]
     public async Task<IActionResult> GetFoodTruckById(Guid id)
     {
-        throw new NotImplementedException();
+        var foodTruck = await _foodTruckService.GetFoodTruckById(id);
+        if (foodTruck is null)
+            return NotFound();
+        
+        return Ok(foodTruck);
     }
     
     [HttpPost]
     public async Task<IActionResult> CreateFoodTruck([FromBody] FoodTruckRegistry foodTruck)
     {
-        return Ok(await _foodTruckService.CreateFoodTruck(foodTruck));
+        
+        var created = await _foodTruckService.CreateFoodTruck(foodTruck);
+        return Created($"api/foodtruck/{created.Id}", created);
+        
     }
     
     [HttpPut("{id}")]

@@ -2,6 +2,7 @@ using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace DtuFoodAPI.Services;
 
@@ -41,13 +42,12 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<List<FoodTruck>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
     {
-
-        throw new NotImplementedException();
+        return await _dbContext.FoodTrucks.ToListAsync(cancellationToken);
     }
 
     public async Task<FoodTruck?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
     }
 
     public async Task<FoodTruck?> UpdateFoodTruck(Guid id, FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
@@ -62,7 +62,7 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<bool> FoodTruckExists(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.FoodTrucks.AnyAsync(x => x.Id == id, cancellationToken);
     }
 }
 
