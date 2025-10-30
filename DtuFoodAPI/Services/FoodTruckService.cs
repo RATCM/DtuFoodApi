@@ -1,6 +1,8 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
+using DtuFoodAPI.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace DtuFoodAPI.Services;
 
@@ -19,32 +21,62 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<FoodTruck> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+
+        var newTruck = new FoodTruck()
+        {
+            Id = _guidGenerator.NewGuid(),
+            Name = foodTruckRegistry.Name,
+            GpsLatitude = foodTruckRegistry.GpsLatitude,
+            GpsLongitude = foodTruckRegistry.GpsLongitude,
+            Products = new List<Product>(),
+            Availability = new List<Availability>(),
+            Managers = new List<User>()
+        };
+        
+        var result = await _dbContext.FoodTrucks.AddAsync(newTruck, cancellationToken: cancellationToken);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        return result.Entity;
     }
 
     public async Task<List<FoodTruck>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.FoodTrucks.ToListAsync(cancellationToken);
     }
 
     public async Task<FoodTruck?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
     }
 
     public async Task<FoodTruck?> UpdateFoodTruck(Guid id, FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
+        if (foodTruck is null) return null;
+        
+        foodTruck.Name        = foodTruckRegistry.Name;
+        foodTruck.GpsLatitude = foodTruckRegistry.GpsLatitude;
+        foodTruck.GpsLongitude= foodTruckRegistry.GpsLongitude;
+
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+        return foodTruck;
     }
+
 
     public async Task<bool> DeleteFoodTruck(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
+        if (foodTruck is null) return false;
+
+        _dbContext.FoodTrucks.Remove(foodTruck);
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+        return true;
     }
 
     public async Task<bool> FoodTruckExists(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.FoodTrucks.AnyAsync(x => x.Id == id, cancellationToken);
     }
 }
 
