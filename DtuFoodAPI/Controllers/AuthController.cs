@@ -46,7 +46,11 @@ public class AuthController : ControllerBase
         var accessToken = _tokenGenerator.GenerateJwtAccessToken(user);
         var refreshToken = _tokenGenerator.GenerateJwtRefreshToken(user);
         
-        return Ok(new { access_token = accessToken, refresh_token = refreshToken });
+        return Ok(new JwtToken()
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        });
     }
     
     [HttpPost("refresh")]
@@ -63,6 +67,9 @@ public class AuthController : ControllerBase
         // Return the new access token
         var accessToken = _tokenGenerator.GenerateJwtAccessToken(user);
         
-        return Ok(new { access_token = accessToken });
+        return Ok(new JwtToken()
+        {
+            AccessToken = accessToken
+        });
     }
 }
