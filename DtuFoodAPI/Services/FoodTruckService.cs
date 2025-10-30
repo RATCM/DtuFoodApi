@@ -52,12 +52,26 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<FoodTruck?> UpdateFoodTruck(Guid id, FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
+        if (foodTruck is null) return null;
+        
+        foodTruck.Name        = foodTruckRegistry.Name;
+        foodTruck.GpsLatitude = foodTruckRegistry.GpsLatitude;
+        foodTruck.GpsLongitude= foodTruckRegistry.GpsLongitude;
+
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+        return foodTruck;
     }
+
 
     public async Task<bool> DeleteFoodTruck(Guid id, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
+        if (foodTruck is null) return false;
+
+        _dbContext.FoodTrucks.Remove(foodTruck);
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+        return true;
     }
 
     public async Task<bool> FoodTruckExists(Guid id, CancellationToken cancellationToken = default)

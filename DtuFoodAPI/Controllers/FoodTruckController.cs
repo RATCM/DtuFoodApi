@@ -46,13 +46,21 @@ public class FoodTruckController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateFoodTruck(Guid id, [FromBody] FoodTruckRegistry foodTruck)
     {
-        throw new NotImplementedException();
+        var updated = await _foodTruckService.UpdateFoodTruck(id, foodTruck, HttpContext.RequestAborted);
+        if (updated is null) 
+            return NotFound();
+        
+        return Ok(updated);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteFoodTruck(Guid id)
     {
-        throw new NotImplementedException();
+        var deleted = await _foodTruckService.DeleteFoodTruck(id, HttpContext.RequestAborted);
+        if (!deleted) 
+            return NotFound();
+        
+        return NoContent();
     }
 
 }
