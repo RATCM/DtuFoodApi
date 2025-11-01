@@ -1,6 +1,7 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DtuFoodAPI.Services;
 
@@ -8,7 +9,7 @@ namespace DtuFoodAPI.Services;
 public class ProductService : IProductService
 {
     private readonly IDtuFoodDbContext _dbContext;
-
+    
     public ProductService(IDtuFoodDbContext dbContext)
     {
         _dbContext = dbContext;
@@ -16,22 +17,40 @@ public class ProductService : IProductService
 
     public async Task<Product> CreateProduct(Guid foodTruckId, ProductRegistry productRegistry, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        //get foodtruck matching the id
+        var foodTruck = await _dbContext.FoodTrucks
+            .FirstOrDefaultAsync(ft => ft.Id == foodTruckId, cancellationToken);
+        
+        var newProduct = new Product()
+        {
+            FoodTruck = foodTruck,
+            Name = productRegistry.Name,
+            Price = productRegistry.Price,
+            Description = productRegistry.Description,
+        };
+        
+        var result = await _dbContext.Products.AddAsync(newProduct, cancellationToken: cancellationToken);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+
+        return result.Entity;
     }
 
     public async Task<List<Product>> GetAllProducts(CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Products.ToListAsync(cancellationToken);
     }
 
     public async Task<List<Product>> GetAllProductsFromFoodTruck(Guid foodTruckId, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Products.Where(f => f.FoodTruck.Id == foodTruckId).ToListAsync(cancellationToken);
+        
     }
 
-    public async Task<FoodTruck?> GetProductById(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
+    public async Task<Product?> GetProductByTruckIdAndProductName(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        //New object cuz composite key to find unique product
+        return await _dbContext.Products.FindAsync(new object[] { foodTruckId, name }, cancellationToken: cancellationToken);
     }
 
     public async Task<Product?> UpdateProduct(Guid foodTruckId, string name, ProductRegistry productRegistry,
@@ -89,7 +108,7 @@ public interface IProductService
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The product, or null if the product doesn't exist</returns>
     /// <remarks>Product names are case-insensitive</remarks>
-    Task<FoodTruck?> GetProductById(Guid foodTruckId, string name, CancellationToken cancellationToken = default);
+    Task<Product?> GetProductByTruckIdAndProductName(Guid foodTruckId, string name, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates the product with a specific id with the data in the product registry

@@ -10,9 +10,9 @@ namespace DtuFoodAPI.Controllers;
 public class FoodTruckController : ControllerBase
 {
     private readonly ILogger<FoodTruckController> _logger;
-    private readonly FoodTruckService _foodTruckService;
+    private readonly IFoodTruckService _foodTruckService;
 
-    public FoodTruckController(ILogger<FoodTruckController> logger, FoodTruckService foodTruckService)
+    public FoodTruckController(ILogger<FoodTruckController> logger, IFoodTruckService foodTruckService)
     {
         _logger = logger;
         _foodTruckService = foodTruckService;
