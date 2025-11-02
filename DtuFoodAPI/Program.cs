@@ -20,6 +20,11 @@ builder.Services.AddAuthentication("Access")
     .AddJwtBearer("Access")
     .AddJwtBearer("Refresh");
 
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
+
 builder.Services.AddDbContext<IDtuFoodDbContext, DtuFoodDbContext>();
 
 builder.Services.AddSingleton<IPasswordHasher<UserRegistry>, PasswordHasher<UserRegistry>>();
