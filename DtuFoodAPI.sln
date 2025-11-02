@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtuFoodAPI", "DtuFoodAPI\Dt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtuFoodAPI.Tests", "DtuFoodAPI.Tests\DtuFoodAPI.Tests.csproj", "{A81A14CD-DCE3-42E2-8E95-D1B2129839F3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtuFoodAPI.IntegrationTests", "DtuFoodAPI.IntegrationTests\DtuFoodAPI.IntegrationTests.csproj", "{3BB3F9EE-70D0-45A2-A345-04CA7EFC832B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{A81A14CD-DCE3-42E2-8E95-D1B2129839F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A81A14CD-DCE3-42E2-8E95-D1B2129839F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A81A14CD-DCE3-42E2-8E95-D1B2129839F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BB3F9EE-70D0-45A2-A345-04CA7EFC832B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BB3F9EE-70D0-45A2-A345-04CA7EFC832B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BB3F9EE-70D0-45A2-A345-04CA7EFC832B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BB3F9EE-70D0-45A2-A345-04CA7EFC832B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
