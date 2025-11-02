@@ -41,6 +41,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> CreateUser([FromBody] UserRegistry user)
     {
         var created = await _userService.CreateUser(user);
