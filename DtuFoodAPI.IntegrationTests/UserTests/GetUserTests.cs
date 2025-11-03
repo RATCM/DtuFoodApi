@@ -17,6 +17,21 @@ public class GetUserTests : TestClass
         //Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
     }
+    
+    [Test]
+    public async Task Get_AllUsers_SucceedsWhenUnauthorized()
+    {
+        // Arrange
+        var token = await LoginAsAdmin();
+        using var getUsersRequest = new HttpRequestMessage(HttpMethod.Get, "/api/user");
+        getUsersRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken!);
+        
+        // Act
+        var response = await Client.SendAsync(getUsersRequest);
+
+        //Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+    }
 
     [Test]
     public async Task Get_UserById_FailsWhenUserNotExists()
