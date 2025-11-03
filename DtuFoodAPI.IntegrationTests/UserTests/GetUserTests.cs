@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
@@ -31,8 +32,10 @@ public class GetUserTests : TestClass
     public async Task Get_UserById_SucceedsWhenUserExists()
     {
         // Arrange
+        var token = await LoginAsAdmin();
+        
         var registry = new UserRegistry() { Email = "some@email", Password = "some password" };
-        var userResponse = await Client.PostAsJsonAsync("/api/user", registry);
+        var userResponse = await CreateUser(registry, token);
         var data = await userResponse.Content.ReadFromJsonAsync<User>();
         
         // Act
