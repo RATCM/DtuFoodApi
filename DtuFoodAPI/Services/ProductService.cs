@@ -56,17 +56,40 @@ public class ProductService : IProductService
     public async Task<Product?> UpdateProduct(Guid foodTruckId, string name, ProductRegistry productRegistry,
         CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        // Find the product by its composite key (FoodTruckId + Name)
+        var product = await _dbContext.Products.FindAsync(
+            new object[] { foodTruckId, name }, cancellationToken: cancellationToken);
+
+        if (product is null)
+            return null;
+
+        // Update
+        product.Price = productRegistry.Price;
+        product.Description = productRegistry.Description;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return product;
     }
 
     public async Task<bool> DeleteProduct(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        // Find the product by its composite key (FoodTruckId + Name)
+        var product = await _dbContext.Products.FindAsync(
+            new object[] { foodTruckId, name }, cancellationToken: cancellationToken);
+
+        if (product is null)
+            return false;
+        
+        _dbContext.Products.Remove(product);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     public async Task<bool> ProductExists(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Products.AnyAsync
+            (x => x.FoodTruck.Id == foodTruckId && x.Name == name, cancellationToken);
     }
 }
 

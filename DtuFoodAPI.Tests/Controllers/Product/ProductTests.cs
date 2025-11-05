@@ -156,5 +156,112 @@ public class ProductTests
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
     }
 
+    [Test]
+    public async Task UpdateProduct_ReturnsOk_WhenUpdated()
+    {
+        // Arrange
+        // Needed because controller uses HttpContext.RequestAborted for the CancellationToken
+        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var truckId = Guid.NewGuid();
+        var productId = Guid.NewGuid(); 
+        var registry = new ProductRegistry
+        {
+            Name = "Cola",
+            Description = "Ny beskrivelse",
+            Price = 42
+        };
+
+        var updated = new Models.Product
+        {
+            FoodTruck = new Models.FoodTruck
+            {
+                Id = truckId, Name = "Truck", GpsLatitude = 1, GpsLongitude = 2,
+                Availability = new List<Availability>(),
+                Products     = new List<Models.Product>(),
+                Managers     = new List<User>()
+            },
+            Name = registry.Name,
+            Description = registry.Description,
+            Price = registry.Price
+        };
+        
+        _productService.UpdateProduct(truckId, productId.ToString(), registry, 
+                Arg.Any<CancellationToken>()).Returns(updated);
+
+        // Act
+        var result = await _sut.UpdateProduct(truckId, productId, registry);
+        var ok = result as OkObjectResult;
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<OkObjectResult>());
+        Assert.That(ok, Is.Not.Null);
+        Assert.That(ok!.Value, Is.EqualTo(updated));
+    }
+
+    [Test]
+    public async Task DeleteProduct_ReturnsNoContent_WhenDeleted()
+    {
+        // Arrange
+        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var truckId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        _productService.DeleteProduct(truckId, productId.ToString(), Arg.Any<CancellationToken>())
+            .Returns(true);
+
+        // Act
+        var result = await _sut.DeleteProduct(truckId, productId);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task DeleteProduct_ReturnsNotFound_WhenMissing()
+    {
+        // Arrange
+        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var truckId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        _productService.DeleteProduct(truckId, productId.ToString(), Arg.Any<CancellationToken>())
+            .Returns(false);
+
+        // Act
+        var result = await _sut.DeleteProduct(truckId, productId);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task UpdateProduct_ReturnsNotFound_WhenMissing()
+    {
+        // Arrange
+        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
+
+        var truckId = Guid.NewGuid();
+        var productId = Guid.NewGuid();
+
+        var registry = new ProductRegistry
+        {
+            Name = "Cola",
+            Description = "Opdateret beskrivelse",
+            Price = 55
+        };
+
+        _productService.UpdateProduct(truckId, productId.ToString(), registry, Arg.Any<CancellationToken>())
+            .Returns((Models.Product?)null);
+
+        // Act
+        var result = await _sut.UpdateProduct(truckId, productId, registry);
+
+        // Assert
+        Assert.That(result, Is.InstanceOf<NotFoundResult>());
+    }
+
     
 }

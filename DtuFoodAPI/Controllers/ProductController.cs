@@ -48,12 +48,20 @@ public class ProductController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduct(Guid truckId, Guid id, [FromBody] ProductRegistry product)
     {
-        throw new NotImplementedException();
+        var updated = await _productService.UpdateProduct(truckId, id.ToString(), product, HttpContext.RequestAborted);
+        if (updated is null)
+            return NotFound();
+
+        return Ok(updated);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(Guid truckId, Guid id)
     {
-        throw new NotImplementedException();
+        var deleted = await _productService.DeleteProduct(truckId, id.ToString(), HttpContext.RequestAborted);
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
     }
 }
