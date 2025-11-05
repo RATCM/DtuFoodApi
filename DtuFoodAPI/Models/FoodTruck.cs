@@ -14,7 +14,8 @@ public record FoodTruck
     
     public required float GpsLatitude { get; set; }
     public required float GpsLongitude { get; set; }
-    
+
+    public required Image? Image { get; init; }
     public required ICollection<Product> Products { get; init; }
     public required ICollection<User> Managers { get; init; }
     public required ICollection<Availability> Availability { get; init; }

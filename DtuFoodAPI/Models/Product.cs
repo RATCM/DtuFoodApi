@@ -18,4 +18,6 @@ public record Product
     public required string Description { get; set; }
     
     public required decimal Price { get; set; } // We use decimal instead of float to prevent precision errors
+
+    public required Image? Image { get; init; }
 }
