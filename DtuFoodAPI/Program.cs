@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
@@ -16,13 +17,13 @@ builder.Services.AddOpenApi();
 
 // The program knows how to setup the authentication
 // from the appsettings.json file
-builder.Services.AddAuthentication("Access")
-    .AddJwtBearer("Access")
-    .AddJwtBearer("Refresh");
+builder.Services.AddAuthentication(AuthSchemes.Access)
+    .AddJwtBearer(AuthSchemes.Access)
+    .AddJwtBearer(AuthSchemes.Refresh);
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy(AuthPolicies.AdminOnly, policy => policy.RequireRole("Admin"));
 });
 
 builder.Services.AddDbContext<IDtuFoodDbContext, DtuFoodDbContext>();

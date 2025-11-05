@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using DtuFoodAPI.Auth;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -54,7 +55,7 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("refresh")]
-    [Authorize(AuthenticationSchemes = "Refresh")]
+    [Authorize(AuthenticationSchemes = AuthSchemes.Refresh)]
     public async Task<IActionResult> RefreshAccessToken()
     {
         // We can find the email from the provided JWT token

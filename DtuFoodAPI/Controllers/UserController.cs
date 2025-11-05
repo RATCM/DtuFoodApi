@@ -1,3 +1,4 @@
+using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
@@ -41,7 +42,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "AdminOnly")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> CreateUser([FromBody] UserRegistry user)
     {
         var created = await _userService.CreateUser(user);
@@ -49,12 +50,14 @@ public class UserController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [Authorize]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserRegistry user)
     {
         throw new NotImplementedException();
     }
 
     [HttpDelete("{id}")]
+    [Authorize]
     public async Task<IActionResult> DeleteUser(Guid id)
     {
         throw new NotImplementedException();
