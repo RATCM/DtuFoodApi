@@ -1,5 +1,6 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Filters;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DtuFoodAPI.Controllers;
@@ -28,18 +29,21 @@ public class ProductController : ControllerBase
     }
     
     [HttpPost]
+    [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> CreateProduct(Guid truckId, [FromBody] ProductRegistry product)
     {
         throw new NotImplementedException();
     }
     
     [HttpPut("{id}")]
+    [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> UpdateProduct(Guid truckId, Guid id, [FromBody] ProductRegistry product)
     {
         throw new NotImplementedException();
     }
 
     [HttpDelete("{id}")]
+    [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> DeleteProduct(Guid truckId, Guid id)
     {
         throw new NotImplementedException();
