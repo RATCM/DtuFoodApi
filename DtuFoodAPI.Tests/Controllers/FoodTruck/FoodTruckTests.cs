@@ -32,11 +32,7 @@ public class FoodTruckTests
         
         _sut = new FoodTruckController(_logger, _foodTruckService);
         
-        // HTTP context for update and delete
-        _sut.ControllerContext = new ControllerContext
-        {
-            HttpContext = new DefaultHttpContext()
-        };
+
     }
     
     [Test]
@@ -169,7 +165,7 @@ public class FoodTruckTests
             Managers = new List<User>()
         };
 
-        _foodTruckService.UpdateFoodTruck(id, registry, Arg.Any<CancellationToken>())
+        _foodTruckService.UpdateFoodTruck(id, registry)
             .Returns(updated);
 
         // Act
@@ -196,7 +192,7 @@ public class FoodTruckTests
             GpsLongitude = 20.0f
         };
 
-        _foodTruckService.UpdateFoodTruck(id, registry, Arg.Any<CancellationToken>())
+        _foodTruckService.UpdateFoodTruck(id, registry)
             .Returns((DtuFoodAPI.Models.FoodTruck?)null);
 
         // Act
@@ -213,7 +209,7 @@ public class FoodTruckTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        _foodTruckService.DeleteFoodTruck(id, Arg.Any<CancellationToken>())
+        _foodTruckService.DeleteFoodTruck(id)
             .Returns(true);
 
         // Act
@@ -230,7 +226,7 @@ public class FoodTruckTests
     {
         // Arrange
         var id = Guid.NewGuid();
-        _foodTruckService.DeleteFoodTruck(id, Arg.Any<CancellationToken>())
+        _foodTruckService.DeleteFoodTruck(id)
             .Returns(false);
 
         // Act

@@ -46,7 +46,7 @@ public class FoodTruckController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateFoodTruck(Guid id, [FromBody] FoodTruckRegistry foodTruck)
     {
-        var updated = await _foodTruckService.UpdateFoodTruck(id, foodTruck, HttpContext.RequestAborted);
+        var updated = await _foodTruckService.UpdateFoodTruck(id, foodTruck);
         if (updated is null) 
             return NotFound();
         
@@ -56,7 +56,7 @@ public class FoodTruckController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteFoodTruck(Guid id)
     {
-        var deleted = await _foodTruckService.DeleteFoodTruck(id, HttpContext.RequestAborted);
+        var deleted = await _foodTruckService.DeleteFoodTruck(id);
         if (!deleted) 
             return NotFound();
         

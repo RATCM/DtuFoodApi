@@ -48,7 +48,7 @@ public class ProductController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduct(Guid truckId, Guid id, [FromBody] ProductRegistry product)
     {
-        var updated = await _productService.UpdateProduct(truckId, id.ToString(), product, HttpContext.RequestAborted);
+        var updated = await _productService.UpdateProduct(truckId, id.ToString(), product);
         if (updated is null)
             return NotFound();
 
@@ -58,7 +58,7 @@ public class ProductController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(Guid truckId, Guid id)
     {
-        var deleted = await _productService.DeleteProduct(truckId, id.ToString(), HttpContext.RequestAborted);
+        var deleted = await _productService.DeleteProduct(truckId, id.ToString());
         if (!deleted)
             return NotFound();
 

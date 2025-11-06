@@ -160,9 +160,6 @@ public class ProductTests
     public async Task UpdateProduct_ReturnsOk_WhenUpdated()
     {
         // Arrange
-        // Needed because controller uses HttpContext.RequestAborted for the CancellationToken
-        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-
         var truckId = Guid.NewGuid();
         var productId = Guid.NewGuid(); 
         var registry = new ProductRegistry
@@ -186,8 +183,7 @@ public class ProductTests
             Price = registry.Price
         };
         
-        _productService.UpdateProduct(truckId, productId.ToString(), registry, 
-                Arg.Any<CancellationToken>()).Returns(updated);
+        _productService.UpdateProduct(truckId, productId.ToString(), registry).Returns(updated);
 
         // Act
         var result = await _sut.UpdateProduct(truckId, productId, registry);
@@ -202,13 +198,11 @@ public class ProductTests
     [Test]
     public async Task DeleteProduct_ReturnsNoContent_WhenDeleted()
     {
-        // Arrange
-        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
 
         var truckId = Guid.NewGuid();
         var productId = Guid.NewGuid();
 
-        _productService.DeleteProduct(truckId, productId.ToString(), Arg.Any<CancellationToken>())
+        _productService.DeleteProduct(truckId, productId.ToString())
             .Returns(true);
 
         // Act
@@ -222,12 +216,10 @@ public class ProductTests
     public async Task DeleteProduct_ReturnsNotFound_WhenMissing()
     {
         // Arrange
-        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-
         var truckId = Guid.NewGuid();
         var productId = Guid.NewGuid();
 
-        _productService.DeleteProduct(truckId, productId.ToString(), Arg.Any<CancellationToken>())
+        _productService.DeleteProduct(truckId, productId.ToString())
             .Returns(false);
 
         // Act
@@ -241,8 +233,6 @@ public class ProductTests
     public async Task UpdateProduct_ReturnsNotFound_WhenMissing()
     {
         // Arrange
-        _sut.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() };
-
         var truckId = Guid.NewGuid();
         var productId = Guid.NewGuid();
 
@@ -253,7 +243,7 @@ public class ProductTests
             Price = 55
         };
 
-        _productService.UpdateProduct(truckId, productId.ToString(), registry, Arg.Any<CancellationToken>())
+        _productService.UpdateProduct(truckId, productId.ToString(), registry)
             .Returns((Models.Product?)null);
 
         // Act
