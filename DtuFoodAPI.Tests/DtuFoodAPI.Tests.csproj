@@ -23,10 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\FoodTruck\" />
-      <Folder Include="Controllers\Product\" />
       <Folder Include="Controllers\User\" />
-      <Folder Include="Services\" />
     </ItemGroup>
 
     <ItemGroup>

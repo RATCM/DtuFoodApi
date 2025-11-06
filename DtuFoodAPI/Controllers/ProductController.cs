@@ -1,5 +1,6 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DtuFoodAPI.Controllers;
@@ -9,39 +10,58 @@ namespace DtuFoodAPI.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly ILogger<ProductController> _logger;
+    private readonly IProductService _productService;
     
-    public ProductController(ILogger<ProductController> logger)
+    public ProductController(ILogger<ProductController> logger, IProductService productService)
     {
+        _productService = productService;
         _logger = logger;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllProductsByTruck(Guid truckId)
     {
-        throw new NotImplementedException();
+        return Ok(await _productService.GetAllProductsFromFoodTruck(truckId));
     }
     
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetProductById(Guid truckId, Guid id)
+    //old name GetProductById(), but product has no id, it has composite key with name and truckid.
+    [HttpGet("{productName}")]
+    public async Task<IActionResult> GetProductByTruckIdAndProductName(Guid truckId, String productName)
     {
-        throw new NotImplementedException();
+        var product = await _productService.GetProductByTruckIdAndProductName(truckId,productName);
+        if (product is null)
+            return NotFound();
+        
+        return Ok(product);
     }
     
     [HttpPost]
     public async Task<IActionResult> CreateProduct(Guid truckId, [FromBody] ProductRegistry product)
     {
-        throw new NotImplementedException();
+        var created = await _productService.CreateProduct(truckId, product);
+        
+        //URI.EscapeDatastring makes sure URI link works even if name contains space or weird charachters
+        return Created($"api/foodtruck/{truckId}/product/{Uri.EscapeDataString(created.Name)}", created);
+        
     }
     
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateProduct(Guid truckId, Guid id, [FromBody] ProductRegistry product)
     {
-        throw new NotImplementedException();
+        var updated = await _productService.UpdateProduct(truckId, id.ToString(), product);
+        if (updated is null)
+            return NotFound();
+
+        return Ok(updated);
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteProduct(Guid truckId, Guid id)
     {
-        throw new NotImplementedException();
+        var deleted = await _productService.DeleteProduct(truckId, id.ToString());
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
     }
 }
