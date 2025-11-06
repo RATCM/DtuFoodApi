@@ -21,7 +21,7 @@ public class UserService : IUserService
         _guidGenerator = guidGenerator;
     }
 
-    public async Task<User> CreateUser(UserRegistry userRegistry, CancellationToken cancellationToken = default)
+    public async Task<UserDto> CreateUser(UserRegistry userRegistry, CancellationToken cancellationToken = default)
     {
         User user = new User()
         {
@@ -36,31 +36,37 @@ public class UserService : IUserService
         
         await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
 
-        return result.Entity;
+        return result.Entity.ToDto();
     }
 
-    public async Task<List<User>> GetAllUsers(CancellationToken cancellationToken = default)
+    public async Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.ToListAsync(cancellationToken);
+        return await _dbContext.Users.Include(x => x.FoodTrucks)
+            .Select(x => x.ToDto()).ToListAsync(cancellationToken);
     }
 
-    public async Task<List<User>> GetAllUsersWithRole(UserRole role, CancellationToken cancellationToken = default)
+    public async Task<List<UserDto>> GetAllUsersWithRole(UserRole role, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.Where(x => x.Role == role).ToListAsync(cancellationToken);
+        return await _dbContext.Users.Where(x => x.Role == role)
+            .Include(x => x.FoodTrucks)
+            .Select(x => x.ToDto())
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<User?> GetUserById(Guid id, CancellationToken cancellationToken = default)
+    public async Task<UserDto?> GetUserById(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.FindAsync([id], cancellationToken: cancellationToken);
+        var result = await _dbContext.Users.Include(x => x.FoodTrucks).FirstOrDefaultAsync(x => x.Id == id, cancellationToken: cancellationToken);
+        return result?.ToDto();
     }
 
-    public async Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken = default)
+    public async Task<UserDto?> GetUserByEmail(string email, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Users.FirstOrDefaultAsync(x => x.Email == email,
+        var result = await _dbContext.Users.Include(x => x.FoodTrucks).FirstOrDefaultAsync(x => x.Email == email,
             cancellationToken: cancellationToken);
+        return result?.ToDto();
     }
 
-    public async Task<User?> UpdateUser(Guid id, UserRegistry userRegistry, CancellationToken cancellationToken = default)
+    public async Task<UserDto?> UpdateUser(Guid id, UserRegistry userRegistry, CancellationToken cancellationToken = default)
     {
         var user = await _dbContext.Users.FindAsync([id],  cancellationToken: cancellationToken);
         if (user is null) return null;
@@ -69,18 +75,25 @@ public class UserService : IUserService
         user.PasswordHash = _userPasswordHasher.HashPassword(userRegistry, userRegistry.Password);
         
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return user;
+        return user.ToDto();
     }
 
-    public async Task<User?> UpdateUserRole(Guid id, UserRole newRole, CancellationToken cancellationToken = default)
+    public async Task<UserDto?> UpdateUserRole(Guid id, UserRole newRole, CancellationToken cancellationToken = default)
     {
-        var user = await _dbContext.Users.FindAsync([id],  cancellationToken: cancellationToken);
+        var user = await _dbContext.Users.Include(x => x.FoodTrucks)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken: cancellationToken);
         if (user is null) return null;
 
         user.Role = newRole;
         
         await _dbContext.SaveChangesAsync(cancellationToken);
-        return user;
+        return user.ToDto();
+    }
+
+    public async Task<string?> GetPasswordHash(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _dbContext.Users.FindAsync([id], cancellationToken: cancellationToken);
+        return result?.PasswordHash;
     }
 
     public async Task<bool> DeleteUser(Guid id, CancellationToken cancellationToken = default)
@@ -113,14 +126,14 @@ public interface IUserService
     /// <param name="userRegistry">The user registry</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The created user entity</returns>
-    Task<User> CreateUser(UserRegistry userRegistry, CancellationToken cancellationToken = default);
+    Task<UserDto> CreateUser(UserRegistry userRegistry, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all users
     /// </summary>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>All users</returns>
-    Task<List<User>> GetAllUsers(CancellationToken cancellationToken = default);
+    Task<List<UserDto>> GetAllUsers(CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all users with a specific role
@@ -128,7 +141,7 @@ public interface IUserService
     /// <param name="role">The user role</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>Users with the role</returns>
-    Task<List<User>> GetAllUsersWithRole(UserRole role, CancellationToken cancellationToken = default);
+    Task<List<UserDto>> GetAllUsersWithRole(UserRole role, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Finds a user from a specific id
@@ -136,7 +149,7 @@ public interface IUserService
     /// <param name="id">The user id</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The user, or null if user doesn't exist</returns>
-    Task<User?> GetUserById(Guid id, CancellationToken cancellationToken = default);
+    Task<UserDto?> GetUserById(Guid id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Finds a user from a specific email
@@ -144,7 +157,7 @@ public interface IUserService
     /// <param name="email">The user email</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The user, or null if user doesn't exist</returns>
-    Task<User?> GetUserByEmail(string email, CancellationToken cancellationToken = default);
+    Task<UserDto?> GetUserByEmail(string email, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates the user with a specific id with the data in the user registry
@@ -154,7 +167,7 @@ public interface IUserService
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The updated user, or null if the user doesn't exist</returns>
     /// <remarks>This will only update the email and password, to update the role use <see cref="UpdateUserRole"/> instead</remarks>
-    Task<User?> UpdateUser(Guid id, UserRegistry userRegistry, CancellationToken cancellationToken = default);
+    Task<UserDto?> UpdateUser(Guid id, UserRegistry userRegistry, CancellationToken cancellationToken = default);
     
     
     /// <summary>
@@ -164,7 +177,16 @@ public interface IUserService
     /// <param name="newRole">The new role</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The updated user, or null if the user doesn't exist</returns>
-    Task<User?> UpdateUserRole(Guid id, UserRole newRole, CancellationToken cancellationToken = default);
+    Task<UserDto?> UpdateUserRole(Guid id, UserRole newRole, CancellationToken cancellationToken = default);
+    
+    
+    /// <summary>
+    /// Gets the password hash from a user with a specific id
+    /// </summary>
+    /// <param name="id">The user id</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>The password hash, or null if user is not found</returns>
+    Task<string?> GetPasswordHash(Guid id, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Deletes a user with a specific id

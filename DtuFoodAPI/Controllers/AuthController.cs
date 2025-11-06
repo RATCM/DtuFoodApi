@@ -36,9 +36,11 @@ public class AuthController : ControllerBase
         // Check if the user exists
         var user = await _userService.GetUserByEmail(userRegistry.Email);
         if (user is null) return NotFound("Email does not exist");
+
+        var passwordHash = await _userService.GetPasswordHash(user.Id);
         
         // Check if password matches
-        var hashResult = _passwordHasher.VerifyHashedPassword(userRegistry, user.PasswordHash, userRegistry.Password);
+        var hashResult = _passwordHasher.VerifyHashedPassword(userRegistry, passwordHash!, userRegistry.Password);
         
         if(hashResult == PasswordVerificationResult.Failed)
             return BadRequest("Password doesn't match");

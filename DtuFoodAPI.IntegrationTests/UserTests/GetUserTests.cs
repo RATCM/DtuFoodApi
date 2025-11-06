@@ -51,11 +51,11 @@ public class GetUserTests : TestClass
         
         var registry = new UserRegistry() { Email = "some@email", Password = "some password" };
         var userResponse = await CreateUser(registry, token);
-        var data = await userResponse.Content.ReadFromJsonAsync<User>();
+        var data = await userResponse.Content.ReadFromJsonAsync<UserDto>();
         
         // Act
         var response = await Client.GetAsync($"/api/user/{data!.Id}");
-        var responseData = await response.Content.ReadFromJsonAsync<User>();
+        var responseData = await response.Content.ReadFromJsonAsync<UserDto>();
 
         // Assert
         Assert.Multiple(() =>

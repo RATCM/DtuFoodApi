@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -18,14 +19,14 @@ public class TokenGenerator : ITokenGenerator
         _configuration = configuration;
     }
     
-    public string GenerateJwtAccessToken(User user)
+    public string GenerateJwtAccessToken(UserDto user)
     {
         var scheme = _configuration.GetSection("Authentication:Schemes:Access");
         var claims = new[]
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
-            new Claim("role", user.Role.ToString()),
+            new Claim("role", user.Role),
             new Claim(JwtRegisteredClaimNames.Jti, _guidGenerator.NewGuid().ToString())
         };
 
@@ -43,7 +44,7 @@ public class TokenGenerator : ITokenGenerator
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string GenerateJwtRefreshToken(User user)
+    public string GenerateJwtRefreshToken(UserDto user)
     {
         var scheme = _configuration.GetSection("Authentication:Schemes:Refresh");
         var claims = new[]
@@ -75,12 +76,12 @@ public interface ITokenGenerator
     /// </summary>
     /// <param name="user">The user</param>
     /// <returns>The raw access token</returns>
-    string GenerateJwtAccessToken(User user);
+    string GenerateJwtAccessToken(UserDto user);
     
     /// <summary>
     /// Generates a new refresh token for a user
     /// </summary>
     /// <param name="user">The user</param>
     /// <returns>The raw refresh token</returns>
-    string GenerateJwtRefreshToken(User user);
+    string GenerateJwtRefreshToken(UserDto user);
 }

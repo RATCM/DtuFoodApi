@@ -79,6 +79,8 @@ public class RefreshTests
             Role = UserRole.Manager
         };
 
+        var dto = user.ToDto();
+
         _sut.ControllerContext.HttpContext = new DefaultHttpContext
         {
             User = new ClaimsPrincipal(new ClaimsIdentity([
@@ -86,8 +88,9 @@ public class RefreshTests
             ]))
         };
         _userService.GetUserByEmail("some@email")
-            .Returns(user);
-        _tokenGenerator.GenerateJwtAccessToken(user)
+            .Returns(dto);
+        
+        _tokenGenerator.GenerateJwtAccessToken(dto)
             .Returns("some-token");
         // Act
         var result = await _sut.RefreshAccessToken() as ObjectResult;
