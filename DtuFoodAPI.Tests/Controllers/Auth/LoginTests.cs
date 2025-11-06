@@ -40,7 +40,7 @@ public class LoginTests
             Password = "Some password1!"
         };
         _userService.GetUserByEmail("some@email")
-            .Returns(Task.FromResult<User?>(null));
+            .Returns(Task.FromResult<UserDto?>(null));
         
         // Act
         var result = await _sut.RegisterUser(registry);
@@ -68,7 +68,7 @@ public class LoginTests
         };
         
         _userService.GetUserByEmail("some@email")
-            .Returns(user);
+            .Returns(user.ToDto());
 
         _passwordHasher.VerifyHashedPassword(registry, user.PasswordHash, registry.Password)
             .Returns(PasswordVerificationResult.Failed);
@@ -99,7 +99,10 @@ public class LoginTests
         };
         
         _userService.GetUserByEmail("some@email")
-            .Returns(user);
+            .Returns(user.ToDto());
+
+        _userService.GetPasswordHash(user.Id)
+            .Returns(user.PasswordHash);
 
         _passwordHasher.VerifyHashedPassword(registry, user.PasswordHash, registry.Password)
             .Returns(PasswordVerificationResult.Success);

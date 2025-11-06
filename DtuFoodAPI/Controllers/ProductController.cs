@@ -1,5 +1,6 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Filters;
 using DtuFoodAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -36,6 +37,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpPost]
+    [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> CreateProduct(Guid truckId, [FromBody] ProductRegistry product)
     {
         var created = await _productService.CreateProduct(truckId, product);
@@ -46,6 +48,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> UpdateProduct(Guid truckId, Guid id, [FromBody] ProductRegistry product)
     {
         var updated = await _productService.UpdateProduct(truckId, id.ToString(), product);
@@ -56,6 +59,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> DeleteProduct(Guid truckId, Guid id)
     {
         var deleted = await _productService.DeleteProduct(truckId, id.ToString());

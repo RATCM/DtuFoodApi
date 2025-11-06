@@ -1,5 +1,8 @@
+using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Filters;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DtuFoodAPI.Services;
 
@@ -35,6 +38,7 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> CreateFoodTruck([FromBody] FoodTruckRegistry foodTruck)
     {
         
@@ -44,6 +48,8 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [Authorize]
+    [FoodTruckManagerFilter("id")]
     public async Task<IActionResult> UpdateFoodTruck(Guid id, [FromBody] FoodTruckRegistry foodTruck)
     {
         var updated = await _foodTruckService.UpdateFoodTruck(id, foodTruck);
@@ -54,6 +60,7 @@ public class FoodTruckController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> DeleteFoodTruck(Guid id)
     {
         var deleted = await _foodTruckService.DeleteFoodTruck(id);

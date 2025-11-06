@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using DtuFoodAPI.Auth;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -35,9 +36,11 @@ public class AuthController : ControllerBase
         // Check if the user exists
         var user = await _userService.GetUserByEmail(userRegistry.Email);
         if (user is null) return NotFound("Email does not exist");
+
+        var passwordHash = await _userService.GetPasswordHash(user.Id);
         
         // Check if password matches
-        var hashResult = _passwordHasher.VerifyHashedPassword(userRegistry, user.PasswordHash, userRegistry.Password);
+        var hashResult = _passwordHasher.VerifyHashedPassword(userRegistry, passwordHash!, userRegistry.Password);
         
         if(hashResult == PasswordVerificationResult.Failed)
             return BadRequest("Password doesn't match");
@@ -54,7 +57,7 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("refresh")]
-    [Authorize(AuthenticationSchemes = "Refresh")]
+    [Authorize(AuthenticationSchemes = AuthSchemes.Refresh)]
     public async Task<IActionResult> RefreshAccessToken()
     {
         // We can find the email from the provided JWT token
