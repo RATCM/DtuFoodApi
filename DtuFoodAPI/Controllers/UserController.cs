@@ -53,13 +53,22 @@ public class UserController : ControllerBase
     [Authorize]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserRegistry user)
     {
-        throw new NotImplementedException();
+        var updated = await _userService.UpdateUser(id, user);
+        if (updated is null)
+            return NotFound();
+
+        return Ok(updated);
+
     }
 
     [HttpDelete("{id}")]
     [Authorize]
     public async Task<IActionResult> DeleteUser(Guid id)
     {
-        throw new NotImplementedException();
+        var deleted = await _userService.DeleteUser(id);
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
     }
 }
