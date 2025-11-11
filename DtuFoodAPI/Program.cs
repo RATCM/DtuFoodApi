@@ -7,6 +7,7 @@ using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +37,7 @@ builder.Services.AddScoped<IFoodTruckService, FoodTruckService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<IGuidGenerator, GuidGenerator>();
 
+builder.Services.AddScoped<DataSeeder>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -45,6 +47,27 @@ builder.Services.AddControllers()
     });
 
 var app = builder.Build();
+
+// Apply migrations and seed in Development
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var db = services.GetRequiredService<DtuFoodDbContext>();
+        db.Database.Migrate();
+        if (app.Environment.IsDevelopment())
+        {
+            var seeder = services.GetRequiredService<DataSeeder>();
+            await seeder.SeedAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database migration/seed error: {ex.Message}");
+        throw;
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

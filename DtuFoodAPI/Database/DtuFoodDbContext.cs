@@ -1,6 +1,7 @@
 using DtuFoodAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace DtuFoodAPI.Database;
 
@@ -9,6 +10,7 @@ public class DtuFoodDbContext : DbContext, IDtuFoodDbContext
     public DbSet<FoodTruck> FoodTrucks { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Availability> Availability { get; set; }
 
     private readonly string _connectionString;
     
@@ -18,7 +20,9 @@ public class DtuFoodDbContext : DbContext, IDtuFoodDbContext
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
-        optionsBuilder.UseNpgsql(_connectionString);
+        optionsBuilder
+            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning))
+            .UseNpgsql(_connectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -39,6 +43,7 @@ public interface IDtuFoodDbContext
     DbSet<FoodTruck> FoodTrucks { get; set; }
     DbSet<User> Users { get; set; }
     DbSet<Product> Products { get; set; }
+    DbSet<Availability> Availability { get; set; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
