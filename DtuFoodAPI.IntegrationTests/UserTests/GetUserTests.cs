@@ -47,10 +47,10 @@ public class GetUserTests : TestClass
     public async Task Get_UserById_SucceedsWhenUserExists()
     {
         // Arrange
-        var token = await LoginAsAdmin();
+        await LoginAsAdmin();
         
         var registry = new UserRegistry() { Email = "some@email", Password = "some password" };
-        var userResponse = await CreateUser(registry, token);
+        var userResponse = await CreateUser(registry);
         var data = await userResponse.Content.ReadFromJsonAsync<UserDto>();
         
         // Act

@@ -2,6 +2,7 @@ using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Filters;
+using DtuFoodAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DtuFoodAPI.Services;
@@ -36,6 +37,24 @@ public class FoodTruckController : ControllerBase
         
         return Ok(foodTruck);
     }
+
+    [HttpGet("{id}/image/home")]
+    public async Task<IActionResult> GetFoodTruckHomeBanner(Guid id)
+    {
+        var image = await _foodTruckService.GetFoodTruckHomeBanner(id);
+        if (image == null)
+            return NotFound("Image could not be found");
+        return File(image.Blob, "application/octet-stream");
+    }
+
+    [HttpGet("{id}/image/page")]
+    public async Task<IActionResult> GetFoodTruckPageBanner(Guid id)
+    {
+        var image = await _foodTruckService.GetFoodTruckPageBanner(id);
+        if (image == null)
+            return NotFound("Image could not be found");
+        return File(image.Blob, "application/octet-stream");
+    }
     
     [HttpPost]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
@@ -47,7 +66,7 @@ public class FoodTruckController : ControllerBase
         
     }
     
-    [HttpPut("{id}")]
+    [HttpPut("{id:guid}")]
     [Authorize]
     [FoodTruckManagerFilter("id")]
     public async Task<IActionResult> UpdateFoodTruck(Guid id, [FromBody] FoodTruckRegistry foodTruck)
@@ -59,6 +78,50 @@ public class FoodTruckController : ControllerBase
         return Ok(updated);
     }
 
+    [HttpPut("{id}/manager")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    public async Task<IActionResult> AddFoodTruckManager(Guid id, [FromBody] FoodTruckManagerRegistry manager)
+    {
+        var foodTruck = await _foodTruckService.AddFoodTruckManager(id, manager.Id);
+        if (foodTruck is null)
+            return NotFound();
+
+        return NoContent();
+    }
+    
+    [HttpPut("{id}/image/home")]
+    [Authorize]
+    [FoodTruckManagerFilter("id")]
+    public async Task<IActionResult> UpdateFoodTruckHomeBanner(Guid id, IFormFile file)
+    {
+        using var ms = new MemoryStream();
+        
+        await file.CopyToAsync(ms);
+        byte[] blob = ms.ToArray();
+        var updated = await _foodTruckService.UpdateFoodTruckHomeBanner(id, blob);
+        if (updated is null) 
+            return NotFound();
+        
+        return Created($"/api/image/{id}/image/home", updated);
+    }
+    
+    [HttpPut("{id}/image/page")]
+    [Authorize]
+    [FoodTruckManagerFilter("id")]
+    public async Task<IActionResult> UpdateFoodTruckPageBanner(Guid id, [FromBody] IFormFile file)
+    {
+        using var ms = new MemoryStream();
+        
+        await file.CopyToAsync(ms);
+
+        byte[] blob = ms.ToArray();
+        var updated = await _foodTruckService.UpdateFoodTruckPageBanner(id, blob);
+        if (updated is null) 
+            return NotFound();
+        
+        return Created($"/api/image/{id}/image/page", updated);
+    }
+    
     [HttpDelete("{id}")]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> DeleteFoodTruck(Guid id)

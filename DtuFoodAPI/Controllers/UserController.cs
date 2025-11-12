@@ -1,6 +1,7 @@
 using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Filters;
 using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -51,6 +52,7 @@ public class UserController : ControllerBase
     
     [HttpPut("{id}")]
     [Authorize]
+    [UserFilter("id")]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserRegistry user)
     {
         var updated = await _userService.UpdateUser(id, user);
@@ -63,6 +65,7 @@ public class UserController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize]
+    [UserFilter("id")]
     public async Task<IActionResult> DeleteUser(Guid id)
     {
         var deleted = await _userService.DeleteUser(id);

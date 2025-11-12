@@ -34,7 +34,8 @@ public static class Mappers
         {
             Name = product.Name,
             Description = product.Description,
-            Price = product.Price
+            Price = product.Price,
+            Category = product.Category,
         };
     }
 

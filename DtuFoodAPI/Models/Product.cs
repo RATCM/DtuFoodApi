@@ -22,5 +22,5 @@ public record Product
     [MaxLength(128)]
     public required string? Category { get; set; }
 
-    public required Image? Image { get; init; }
+    public required Image? Image { get; set; }
 }

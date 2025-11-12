@@ -54,11 +54,14 @@ public class FoodTruckTests
             GpsLongitude = 12.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
 
+        var foodTruckDto = foodTruck.ToDto();
+
         _foodTruckService.CreateFoodTruck(registry)
-            .Returns(foodTruck);
+            .Returns(foodTruckDto);
         
         //Act
         var result = await _sut.CreateFoodTruck(registry);
@@ -83,7 +86,8 @@ public class FoodTruckTests
             GpsLongitude = 12.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
         var foodTruck2 = new Models.FoodTruck()
         {
@@ -93,7 +97,8 @@ public class FoodTruckTests
             GpsLongitude = 16.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null,
         };
         foodTrucks.Add(foodTruck1); foodTrucks.Add(foodTruck2);
         
@@ -127,7 +132,8 @@ public class FoodTruckTests
             GpsLongitude = 36.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
         
         _foodTruckService.GetFoodTruckById(foodTruck.Id)
@@ -162,7 +168,8 @@ public class FoodTruckTests
             GpsLongitude = registry.GpsLongitude,
             Availability = new List<Availability>(),
             Products = new List<DtuFoodAPI.Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
 
         _foodTruckService.UpdateFoodTruck(id, registry)

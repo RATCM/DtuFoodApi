@@ -9,6 +9,7 @@ public class TestDbContext : DbContext, IDtuFoodDbContext
     public DbSet<FoodTruck> FoodTrucks { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Image> Images { get; set; }
 
     public TestDbContext(DbContextOptions<TestDbContext> options) : base(options) { }
 }
