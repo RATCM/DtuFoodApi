@@ -97,13 +97,20 @@ public abstract class TestClass
         return await Client.SendAsync(setHomeBannerRequest);
     }
     
-    protected async Task<HttpResponseMessage> SetFoodTruckPageBanner(Guid id, byte[] blob)
+    protected async Task<HttpResponseMessage> SetFoodTruckPageBanner(Guid id, byte[] file)
     {
-        using var setPageBannerRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/foodtruck/{id}/image/page");
-        setPageBannerRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _bearer!.AccessToken!);
-        setPageBannerRequest.Content = new ByteArrayContent(blob);
-
-        return await Client.SendAsync(setPageBannerRequest);
+        using var content = new MultipartFormDataContent();
+        using var ms = new MemoryStream(file);
+        using var setHomeBannerRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/foodtruck/{id}/image/page");
+        var fileContent = new StreamContent(ms);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        
+        content.Add(fileContent, "file", "file-name");
+        
+        setHomeBannerRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _bearer!.AccessToken!);
+        setHomeBannerRequest.Content = content;
+        
+        return await Client.SendAsync(setHomeBannerRequest);
     }
 
     protected async Task<HttpResponseMessage> AddFoodTruckManager(Guid id, FoodTruckManagerRegistry registry)
