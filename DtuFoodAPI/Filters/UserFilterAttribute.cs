@@ -54,7 +54,21 @@ public class UserFilterAttribute : AuthorizeAttribute, IAsyncActionFilter
         }
 
         var userId = Guid.Parse(userIdClaim.Value);
-        var providedId = context.HttpContext.GetRouteValue(_key) as Guid?;
+        var providedIdStr = context.HttpContext.GetRouteValue(_key) as string;
+        if (providedIdStr is null)
+        {
+            var errorResponse = new
+            {
+                Status = (int)HttpStatusCode.BadRequest,
+            };
+            
+            context.Result = new JsonResult(errorResponse)
+            {
+                StatusCode = (int)HttpStatusCode.BadRequest,
+            };
+            return;
+        }
+        var providedId = Guid.Parse(providedIdStr);
 
         if (userId != providedId)
         {
