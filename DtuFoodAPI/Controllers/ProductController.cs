@@ -1,3 +1,4 @@
+using DotNet.RateLimiter.ActionFilters;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Filters;
@@ -20,6 +21,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpGet]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     public async Task<IActionResult> GetAllProductsByTruck(Guid truckId)
     {
         return Ok(await _productService.GetAllProductsFromFoodTruck(truckId));
@@ -27,6 +29,7 @@ public class ProductController : ControllerBase
     
     //old name GetProductById(), but product has no id, it has composite key with name and truckid.
     [HttpGet("{productName}")]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     public async Task<IActionResult> GetProductByTruckIdAndProductName(Guid truckId, String productName)
     {
         var product = await _productService.GetProductByTruckIdAndProductName(truckId,productName);
@@ -37,6 +40,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpPost]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> CreateProduct(Guid truckId, [FromBody] ProductRegistry product)
     {
@@ -48,6 +52,7 @@ public class ProductController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> UpdateProduct(Guid truckId, Guid id, [FromBody] ProductRegistry product)
     {
@@ -59,6 +64,7 @@ public class ProductController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     [FoodTruckManagerFilter("truckId")]
     public async Task<IActionResult> DeleteProduct(Guid truckId, Guid id)
     {

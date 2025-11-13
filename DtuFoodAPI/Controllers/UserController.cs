@@ -1,3 +1,4 @@
+using DotNet.RateLimiter.ActionFilters;
 using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
@@ -26,6 +27,7 @@ public class UserController : ControllerBase
     }
     
     [HttpGet]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize]
     public async Task<IActionResult> GetAllUsers()
     {
@@ -33,6 +35,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     public async Task<IActionResult> GetUserById(Guid id)
     {
         var user = await _userService.GetUserById(id);
@@ -43,6 +46,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> CreateUser([FromBody] UserRegistry user)
     {
@@ -51,6 +55,7 @@ public class UserController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize]
     [UserFilter("id")]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserRegistry user)
@@ -64,6 +69,7 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize]
     [UserFilter("id")]
     public async Task<IActionResult> DeleteUser(Guid id)

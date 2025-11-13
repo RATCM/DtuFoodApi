@@ -1,3 +1,4 @@
+using DotNet.RateLimiter.ActionFilters;
 using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
@@ -23,12 +24,14 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpGet]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     public async Task<IActionResult> GetAllFoodTrucks()
     {
         return Ok(await _foodTruckService.GetAllFoodTrucks());
     }
     
     [HttpGet("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
     public async Task<IActionResult> GetFoodTruckById(Guid id)
     {
         var foodTruck = await _foodTruckService.GetFoodTruckById(id);
@@ -39,6 +42,7 @@ public class FoodTruckController : ControllerBase
     }
 
     [HttpGet("{id}/image/home")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     public async Task<IActionResult> GetFoodTruckHomeBanner(Guid id)
     {
         var image = await _foodTruckService.GetFoodTruckHomeBanner(id);
@@ -48,6 +52,7 @@ public class FoodTruckController : ControllerBase
     }
 
     [HttpGet("{id}/image/page")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     public async Task<IActionResult> GetFoodTruckPageBanner(Guid id)
     {
         var image = await _foodTruckService.GetFoodTruckPageBanner(id);
@@ -58,6 +63,7 @@ public class FoodTruckController : ControllerBase
     
     [HttpPost]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     public async Task<IActionResult> CreateFoodTruck([FromBody] FoodTruckRegistry foodTruck)
     {
         
@@ -67,6 +73,7 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpPut("{id:guid}")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize]
     [FoodTruckManagerFilter("id")]
     public async Task<IActionResult> UpdateFoodTruck(Guid id, [FromBody] FoodTruckRegistry foodTruck)
@@ -79,6 +86,7 @@ public class FoodTruckController : ControllerBase
     }
 
     [HttpPut("{id}/manager")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> AddFoodTruckManager(Guid id, [FromBody] FoodTruckManagerRegistry manager)
     {
@@ -90,6 +98,7 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpPut("{id}/image/home")]
+    [RateLimit(PeriodInSec = 60, Limit = 5)]
     [Authorize]
     [FoodTruckManagerFilter("id")]
     public async Task<IActionResult> UpdateFoodTruckHomeBanner(Guid id, IFormFile file)
@@ -106,6 +115,7 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpPut("{id}/image/page")]
+    [RateLimit(PeriodInSec = 60, Limit = 5)]
     [Authorize]
     [FoodTruckManagerFilter("id")]
     public async Task<IActionResult> UpdateFoodTruckPageBanner(Guid id, [FromBody] IFormFile file)
@@ -123,6 +133,7 @@ public class FoodTruckController : ControllerBase
     }
     
     [HttpDelete("{id}")]
+    [RateLimit(PeriodInSec = 60, Limit = 5)]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     public async Task<IActionResult> DeleteFoodTruck(Guid id)
     {
