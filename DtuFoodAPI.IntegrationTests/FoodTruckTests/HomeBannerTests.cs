@@ -54,10 +54,6 @@ public class HomeBannerTests : TestClass
             GpsLongitude = 0.2f,
         };
         var imageData = "some raw image data"u8.ToArray();
-        using var ms = new MemoryStream(imageData);
-        IFormFile registry = new FormFile(ms, 0, ms.Length,
-            "some-name",
-            "/some-name");
 
         var postTruckResponse = await CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();

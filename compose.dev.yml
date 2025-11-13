@@ -1,6 +1,6 @@
 name: dtu-food-dev
 services:
-  authdb:
+  food-db:
     container_name: "dtu-food-db"
     image: postgres:15
     environment:
