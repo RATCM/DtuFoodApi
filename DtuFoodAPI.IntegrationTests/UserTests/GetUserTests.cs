@@ -47,10 +47,10 @@ public class GetUserTests : TestClass
     public async Task Get_UserById_SucceedsWhenUserExists()
     {
         // Arrange
-        var token = await LoginAsAdmin();
+        await LoginAsAdmin();
         
         var registry = new UserRegistry() { Email = "some@email", Password = "some password" };
-        var userResponse = await CreateUser(registry, token);
+        var userResponse = await CreateUser(registry);
         var data = await userResponse.Content.ReadFromJsonAsync<UserDto>();
         
         // Act
@@ -63,6 +63,51 @@ public class GetUserTests : TestClass
             Assert.That(userResponse.StatusCode, Is.EqualTo(HttpStatusCode.Created));
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(data, Is.EqualTo(responseData));
+        });
+    }
+
+    [Test]
+    public async Task Get_AllUsers_FailsWhenRateLimitExceeded()
+    {
+        // Arrange
+        var jwtToken = await LoginAsAdmin();
+        List<HttpResponseMessage> responses = [];
+        
+        // Act
+        for (int i = 0; i < 11; i++)
+        {
+            using var getUsersRequest = new HttpRequestMessage(HttpMethod.Get, "/api/user");
+            getUsersRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken!.AccessToken!);
+
+            responses.Add(await Client.SendAsync(getUsersRequest));
+        }
+        
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(responses.Take(10).All(x => x.StatusCode == HttpStatusCode.OK), Is.True);
+            Assert.That(responses.Last().StatusCode, Is.EqualTo(HttpStatusCode.TooManyRequests));
+        });
+    }
+    
+    [Test]
+    public async Task Get_UserById_FailsWhenRateLimitExceeded()
+    {
+        // Arrange
+        var adminId = Admin.Id;
+        List<HttpResponseMessage> responses = [];
+        
+        // Act
+        for (int i = 0; i < 31; i++)
+        {
+            responses.Add(await Client.GetAsync($"/api/user/{adminId}"));
+        }
+        
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.That(responses.Take(30).All(x => x.StatusCode == HttpStatusCode.OK), Is.True);
+            Assert.That(responses.Last().StatusCode, Is.EqualTo(HttpStatusCode.TooManyRequests));
         });
     }
 }

@@ -9,6 +9,8 @@ public class DtuFoodDbContext : DbContext, IDtuFoodDbContext
     public DbSet<FoodTruck> FoodTrucks { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Product> Products { get; set; }
+    public DbSet<Image> Images { get; set; }
+
 
     private readonly string _connectionString;
     
@@ -39,6 +41,7 @@ public interface IDtuFoodDbContext
     DbSet<FoodTruck> FoodTrucks { get; set; }
     DbSet<User> Users { get; set; }
     DbSet<Product> Products { get; set; }
+    DbSet<Image> Images { get; set; }
     
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

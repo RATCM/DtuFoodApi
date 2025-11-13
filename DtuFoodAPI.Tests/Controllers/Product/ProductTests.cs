@@ -49,7 +49,8 @@ public class ProductTests
             GpsLongitude = 36.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
         
         var product = new Models.Product()
@@ -58,6 +59,8 @@ public class ProductTests
             Name = registry.Name,
             Description = registry.Description,
             Price = registry.Price,
+            Category = registry.Category,
+            Image = null,
         };
 
         _productService.CreateProduct(product.FoodTruck.Id,registry)
@@ -85,7 +88,8 @@ public class ProductTests
             GpsLongitude = 36.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
         
         var product1 = new Models.Product()
@@ -94,6 +98,8 @@ public class ProductTests
             Name = "Fanta",
             Description = "Appelsin smag",
             Price = 20,
+            Category = null,
+            Image = null
         };
         var product2 = new Models.Product()
         {
@@ -101,6 +107,8 @@ public class ProductTests
             Name = "Cola",
             Description = "Cola smag",
             Price = 30,
+            Category = null,
+            Image = null
         };
         
         products.Add(product1); products.Add(product2);
@@ -134,7 +142,8 @@ public class ProductTests
             GpsLongitude = 36.5683f,
             Availability   = new List<Availability>(),
             Products = new List<Models.Product>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null
         };
         
         var product1 = new Models.Product()
@@ -143,6 +152,8 @@ public class ProductTests
             Name = "Fanta",
             Description = "Appelsin smag",
             Price = 20,
+            Category = null,
+            Image = null
         };
         
         _productService.GetProductByTruckIdAndProductName(foodTruck.Id,"Fanta")
@@ -176,11 +187,14 @@ public class ProductTests
                 Id = truckId, Name = "Truck", GpsLatitude = 1, GpsLongitude = 2,
                 Availability = new List<Availability>(),
                 Products     = new List<Models.Product>(),
-                Managers     = new List<User>()
+                Managers     = new List<User>(),
+                PageBanner        = null,
             },
             Name = registry.Name,
             Description = registry.Description,
-            Price = registry.Price
+            Price = registry.Price,
+            Category = registry.Category,
+            Image = null,
         };
         
         _productService.UpdateProduct(truckId, productId.ToString(), registry).Returns(updated);

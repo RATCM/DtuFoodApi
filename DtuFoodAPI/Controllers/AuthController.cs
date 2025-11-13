@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using DotNet.RateLimiter.ActionFilters;
 using DtuFoodAPI.Auth;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Services;
@@ -31,6 +32,7 @@ public class AuthController : ControllerBase
     
     
     [HttpPost("login")]
+    [RateLimit(PeriodInSec = 60, Limit = 5)]
     public async Task<IActionResult> RegisterUser([FromBody] UserRegistry userRegistry)
     {
         // Check if the user exists
@@ -57,6 +59,7 @@ public class AuthController : ControllerBase
     }
     
     [HttpPost("refresh")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize(AuthenticationSchemes = AuthSchemes.Refresh)]
     public async Task<IActionResult> RefreshAccessToken()
     {

@@ -3,6 +3,7 @@ using System;
 using DtuFoodAPI.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DtuFoodAPI.Database.Migrations
 {
     [DbContext(typeof(DtuFoodDbContext))]
-    partial class DtuFoodDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251105224301_AddMediaStorage")]
+    partial class AddMediaStorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,7 +57,7 @@ namespace DtuFoodAPI.Database.Migrations
                     b.Property<float>("GpsLongitude")
                         .HasColumnType("real");
 
-                    b.Property<Guid?>("HomeBannerId")
+                    b.Property<Guid?>("ImageId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
@@ -62,14 +65,9 @@ namespace DtuFoodAPI.Database.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");
 
-                    b.Property<Guid?>("PageBannerId")
-                        .HasColumnType("uuid");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("HomeBannerId");
-
-                    b.HasIndex("PageBannerId");
+                    b.HasIndex("ImageId");
 
                     b.ToTable("FoodTrucks");
                 });
@@ -98,10 +96,6 @@ namespace DtuFoodAPI.Database.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .UseCollation("case_insensitive");
-
-                    b.Property<string>("Category")
-                        .HasMaxLength(128)
-                        .HasColumnType("character varying(128)");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -175,17 +169,11 @@ namespace DtuFoodAPI.Database.Migrations
 
             modelBuilder.Entity("DtuFoodAPI.Models.FoodTruck", b =>
                 {
-                    b.HasOne("DtuFoodAPI.Models.Image", "HomeBanner")
+                    b.HasOne("DtuFoodAPI.Models.Image", "Image")
                         .WithMany()
-                        .HasForeignKey("HomeBannerId");
+                        .HasForeignKey("ImageId");
 
-                    b.HasOne("DtuFoodAPI.Models.Image", "PageBanner")
-                        .WithMany()
-                        .HasForeignKey("PageBannerId");
-
-                    b.Navigation("HomeBanner");
-
-                    b.Navigation("PageBanner");
+                    b.Navigation("Image");
                 });
 
             modelBuilder.Entity("DtuFoodAPI.Models.Product", b =>

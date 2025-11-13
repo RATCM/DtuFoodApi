@@ -1,6 +1,7 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 
 namespace DtuFoodAPI.Services;
@@ -15,11 +16,13 @@ public class ProductService : IProductService
         _dbContext = dbContext;
     }
 
-    public async Task<Product> CreateProduct(Guid foodTruckId, ProductRegistry productRegistry, CancellationToken cancellationToken = default)
+    public async Task<Product?> CreateProduct(Guid foodTruckId, ProductRegistry productRegistry, CancellationToken cancellationToken = default)
     {
         //get foodtruck matching the id
         var foodTruck = await _dbContext.FoodTrucks
             .FirstOrDefaultAsync(ft => ft.Id == foodTruckId, cancellationToken);
+
+        if (foodTruck is null) return null;
         
         var newProduct = new Product()
         {
@@ -27,6 +30,8 @@ public class ProductService : IProductService
             Name = productRegistry.Name,
             Price = productRegistry.Price,
             Description = productRegistry.Description,
+            Category = productRegistry.Category,
+            Image = null
         };
         
         var result = await _dbContext.Products.AddAsync(newProduct, cancellationToken: cancellationToken);
@@ -51,6 +56,14 @@ public class ProductService : IProductService
     {
         //New object cuz composite key to find unique product
         return await _dbContext.Products.FindAsync(new object[] { foodTruckId, name }, cancellationToken: cancellationToken);
+    }
+
+    public async Task<Image?> GetProductImage(Guid foodTruckId, string name, CancellationToken cancellationToken)
+    {
+        var product = await _dbContext.Products
+            .Include(x => x.Image)
+            .FirstOrDefaultAsync(x => x.FoodTruck.Id == foodTruckId && x.Name == name, cancellationToken);
+        return product?.Image;
     }
 
     public async Task<Product?> UpdateProduct(Guid foodTruckId, string name, ProductRegistry productRegistry,
@@ -103,7 +116,7 @@ public interface IProductService
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The created product entity</returns>
     /// <remarks>Products in the same food truck cannot have the same name</remarks>
-    Task<Product> CreateProduct(Guid foodTruckId,
+    Task<Product?> CreateProduct(Guid foodTruckId,
         ProductRegistry productRegistry,
         CancellationToken cancellationToken = default);
     
@@ -133,6 +146,9 @@ public interface IProductService
     /// <remarks>Product names are case-insensitive</remarks>
     Task<Product?> GetProductByTruckIdAndProductName(Guid foodTruckId, string name, CancellationToken cancellationToken = default);
 
+
+    Task<Image?> GetProductImage(Guid foodTruckId, string name, CancellationToken cancellationToken);
+    
     /// <summary>
     /// Updates the product with a specific id with the data in the product registry
     /// </summary>

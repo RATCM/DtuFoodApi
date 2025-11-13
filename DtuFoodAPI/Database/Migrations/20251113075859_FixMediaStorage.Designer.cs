@@ -3,6 +3,7 @@ using System;
 using DtuFoodAPI.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DtuFoodAPI.Database.Migrations
 {
     [DbContext(typeof(DtuFoodDbContext))]
-    partial class DtuFoodDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251113075859_FixMediaStorage")]
+    partial class FixMediaStorage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

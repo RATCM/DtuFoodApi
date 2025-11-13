@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DtuFoodAPI.Services;
 
-// TODO: Implement methods
 public class FoodTruckService : IFoodTruckService
 {
     private readonly IDtuFoodDbContext _dbContext;
@@ -19,7 +18,7 @@ public class FoodTruckService : IFoodTruckService
         _guidGenerator = guidGenerator;
     }
 
-    public async Task<FoodTruck> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
+    public async Task<FoodTruckDto> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
 
         var newTruck = new FoodTruck()
@@ -30,14 +29,15 @@ public class FoodTruckService : IFoodTruckService
             GpsLongitude = foodTruckRegistry.GpsLongitude,
             Products = new List<Product>(),
             Availability = new List<Availability>(),
-            Managers = new List<User>()
+            Managers = new List<User>(),
+            PageBanner = null,
         };
         
         var result = await _dbContext.FoodTrucks.AddAsync(newTruck, cancellationToken: cancellationToken);
         
         await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
 
-        return result.Entity;
+        return result.Entity.ToDto();
     }
 
     public async Task<List<FoodTruck>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
@@ -50,6 +50,23 @@ public class FoodTruckService : IFoodTruckService
         return await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
     }
 
+    public async Task<Image?> GetFoodTruckHomeBanner(Guid id, CancellationToken cancellationToken = default)
+    {
+        var truck = await _dbContext.FoodTrucks
+            .Include(x => x.HomeBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return truck?.HomeBanner;
+    }
+    
+    public async Task<Image?> GetFoodTruckPageBanner(Guid id, CancellationToken cancellationToken = default)
+    {
+        var truck = await _dbContext.FoodTrucks
+            .Include(x => x.PageBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return truck?.PageBanner;
+    }
+
+    
     public async Task<FoodTruck?> UpdateFoodTruck(Guid id, FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
         var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
@@ -63,6 +80,75 @@ public class FoodTruckService : IFoodTruckService
         return foodTruck;
     }
 
+    public async Task<Image?> UpdateFoodTruckHomeBanner(Guid id,
+        byte[] image,
+        CancellationToken cancellationToken = default)
+    {
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.HomeBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (foodTruck is null) return null;
+
+        if (foodTruck.HomeBanner is not null)
+            _dbContext.Images.Remove(foodTruck.HomeBanner);
+
+        var imageEntry = _dbContext.Images.Add(new Image
+        {
+            Id = _guidGenerator.NewGuid(),
+            Blob = image
+        });
+        
+        foodTruck.HomeBanner = imageEntry.Entity;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return foodTruck.HomeBanner;
+    }
+    
+    public async Task<Image?> UpdateFoodTruckPageBanner(Guid id,
+        byte[] image,
+        CancellationToken cancellationToken = default)
+    {
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.PageBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        if (foodTruck is null) return null;
+
+        // Set PageBanner to new image only if its null
+        foodTruck.PageBanner ??= new Image
+        {
+            Id = _guidGenerator.NewGuid(),
+            Blob = image
+        };
+        foodTruck.PageBanner.Blob = image; // I know we may be setting it twice, but it probably doesn't matter
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return foodTruck.PageBanner;
+    }
+
+    public async Task<FoodTruckDto?> AddFoodTruckManager(Guid id, 
+        Guid userId, 
+        CancellationToken cancellationToken = default)
+    {
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.Managers)
+            .Include(x => x.Products)
+            .Include(x => x.Availability)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        var user = await _dbContext.Users.FindAsync([userId], cancellationToken);
+
+        if (foodTruck is null || user is null) return null;
+        
+        foodTruck.Managers.Add(user);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return foodTruck.ToDto();
+    }
 
     public async Task<bool> DeleteFoodTruck(Guid id, CancellationToken cancellationToken = default)
     {
@@ -88,7 +174,7 @@ public interface IFoodTruckService
     /// <param name="foodTruckRegistry">The food truck registry</param>
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The created food truck entity</returns>
-    Task<FoodTruck> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default);
+    Task<FoodTruckDto> CreateFoodTruck(FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Gets all food trucks
@@ -105,6 +191,11 @@ public interface IFoodTruckService
     /// <returns>The food truck, or null if the food truck doesn't exist</returns>
     Task<FoodTruck?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default);
 
+    Task<Image?> GetFoodTruckHomeBanner(Guid id, CancellationToken cancellationToken = default);
+    
+    Task<Image?> GetFoodTruckPageBanner(Guid id, CancellationToken cancellationToken = default);
+
+
     /// <summary>
     /// Updates the food truck with a specific id with the data in the food truck registry
     /// </summary>
@@ -115,6 +206,18 @@ public interface IFoodTruckService
     /// <remarks>This doesn't update the products in the food truck</remarks>
     Task<FoodTruck?> UpdateFoodTruck(Guid id,
         FoodTruckRegistry foodTruckRegistry,
+        CancellationToken cancellationToken = default);
+
+    Task<Image?> UpdateFoodTruckHomeBanner(Guid id,
+        byte[] image,
+        CancellationToken cancellationToken = default);
+    
+    Task<Image?> UpdateFoodTruckPageBanner(Guid id,
+        byte[] image,
+        CancellationToken cancellationToken = default);
+
+    Task<FoodTruckDto?> AddFoodTruckManager(Guid id,
+        Guid userId,
         CancellationToken cancellationToken = default);
     
     /// <summary>

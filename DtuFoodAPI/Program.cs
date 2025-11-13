@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using DotNet.RateLimiter;
 using DtuFoodAPI.Auth;
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
@@ -10,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRateLimitService(builder.Configuration);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
