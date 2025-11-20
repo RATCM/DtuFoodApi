@@ -47,7 +47,7 @@ public class HomeBannerTests : TestClass
             GpsLatitude = 0.1f,
             GpsLongitude = 0.2f,
         };
-        var imageData = await File.ReadAllBytesAsync(@"TestData\Images\IMG_1.jpg");
+        var imageData = await File.ReadAllBytesAsync(Path.Combine("TestData", "Images", "IMG_1.jpg"));
 
         var postTruckResponse = await FoodTruckService.CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
@@ -84,7 +84,7 @@ public class HomeBannerTests : TestClass
             GpsLatitude = 0.1f,
             GpsLongitude = 0.2f,
         };
-        var imageData = await File.ReadAllBytesAsync(@"TestData\Images\IMG_1.jpg");
+        var imageData = await File.ReadAllBytesAsync(Path.Combine("TestData", "Images", "IMG_1.jpg"));
         var postTruckResponse = await FoodTruckService.CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
         await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, new FoodTruckManagerRegistry()
@@ -115,7 +115,7 @@ public class HomeBannerTests : TestClass
             GpsLatitude = 0.1f,
             GpsLongitude = 0.2f,
         };
-        var imageData = await File.ReadAllBytesAsync(@"TestData\Images\IMG_1.jpg");
+        var imageData = await File.ReadAllBytesAsync(Path.Combine("TestData", "Images", "IMG_1.jpg"));
         var postTruckResponse = await FoodTruckService.CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
         await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, new FoodTruckManagerRegistry()
