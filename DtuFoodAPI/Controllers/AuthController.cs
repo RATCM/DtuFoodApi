@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DtuFoodAPI.Controllers;
 
+/// <summary>
+/// Endpoints for authentication
+/// </summary>
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
@@ -18,6 +21,13 @@ public class AuthController : ControllerBase
     private readonly ITokenGenerator _tokenGenerator;
     private readonly IPasswordHasher<UserRegistry> _passwordHasher;
 
+    /// <summary>
+    /// Auth controller constructor
+    /// </summary>
+    /// <param name="logger">The logger</param>
+    /// <param name="userService">The user service</param>
+    /// <param name="tokenGenerator">The token generator</param>
+    /// <param name="passwordHasher">The password hasher</param>
     public AuthController(ILogger<AuthController> logger,
         IUserService userService,
         ITokenGenerator tokenGenerator,
@@ -29,9 +39,21 @@ public class AuthController : ControllerBase
         _passwordHasher = passwordHasher;
     }
     
-    
+    /// <summary>
+    /// Login endpoint
+    /// </summary>
+    /// <param name="userRegistry">The user registry</param>
+    /// <returns>The generated JWT tokens</returns>
+    /// <response code="200">If the request was successful</response>
+    /// <response code="400">If the credentials are invalid</response>
+    /// <response code="404">If the user/email doesn't exist</response>
+    /// <response code="429">If the rate limit is exceeded</response>
     [HttpPost("login")]
     [RateLimit(PeriodInSec = 60, Limit = 5)]
+    [ProducesResponseType(typeof(JwtToken), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RegisterUser([FromBody] UserRegistry userRegistry)
     {
         // Check if the user exists
@@ -57,9 +79,19 @@ public class AuthController : ControllerBase
         });
     }
     
+    /// <summary>
+    /// Used for getting a new access token from a refresh token
+    /// </summary>
+    /// <returns>The generated access token</returns>
+    /// <response code="200">If the request was successful</response>
+    /// <response code="400">If the token claims are invalid</response>
+    /// <response code="429">If the rate limit is exceeded</response>
     [HttpPost("refresh")]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize(AuthenticationSchemes = AuthSchemes.Refresh)]
+    [ProducesResponseType(typeof(JwtToken), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> RefreshAccessToken()
     {
         // We can find the email from the provided JWT token

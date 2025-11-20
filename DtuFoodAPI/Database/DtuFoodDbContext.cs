@@ -4,24 +4,39 @@ using Microsoft.EntityFrameworkCore.Internal;
 
 namespace DtuFoodAPI.Database;
 
+/// <summary>
+/// Postgres database context
+/// </summary>
 public class DtuFoodDbContext : DbContext, IDtuFoodDbContext
-{
+{ 
+    /// <inheritdoc />
     public DbSet<FoodTruck> FoodTrucks { get; set; }
+    
+    /// <inheritdoc />
     public DbSet<User> Users { get; set; }
+    
+    /// <inheritdoc />
     public DbSet<Product> Products { get; set; }
+    
+    /// <inheritdoc />
     public DbSet<Image> Images { get; set; }
-
-
+    
     private readonly string _connectionString;
     
+    /// <summary>
+    /// Db context constructor
+    /// </summary>
+    /// <param name="configuration">The configuration</param>
     public DtuFoodDbContext(IConfiguration configuration)
     {
         _connectionString = configuration["ConnectionStrings:Database"]!;
     }
 
+    /// <inheritdoc />
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) =>
         optionsBuilder.UseNpgsql(_connectionString);
 
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // This ensures that the product name is case-insensitive
@@ -36,12 +51,31 @@ public class DtuFoodDbContext : DbContext, IDtuFoodDbContext
     }
 }
 
+/// <summary>
+/// Db context interface
+/// </summary>
 public interface IDtuFoodDbContext 
 {
+    /// <summary>
+    /// The food trucks
+    /// </summary>
     DbSet<FoodTruck> FoodTrucks { get; set; }
+    
+    /// <summary>
+    /// The users
+    /// </summary>
     DbSet<User> Users { get; set; }
+    
+    /// <summary>
+    /// The food truck products
+    /// </summary>
     DbSet<Product> Products { get; set; }
+    
+    /// <summary>
+    /// The images
+    /// </summary>
     DbSet<Image> Images { get; set; }
     
+    /// <inheritdoc cref="DbContext.SaveChangesAsync(CancellationToken)"/>
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

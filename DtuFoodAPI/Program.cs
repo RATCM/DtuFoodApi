@@ -54,13 +54,17 @@ builder.Services.AddControllers()
         // Prevents infinite cycles when serializing to json
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+builder.Services.AddOpenApiDocument();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseOpenApi();
+
+    app.UseSwaggerUi();
+    //app.MapOpenApi();
 }
 
 app.UseAuthentication();

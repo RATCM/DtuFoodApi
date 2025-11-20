@@ -11,6 +11,9 @@ using FluentValidation;
 
 namespace DtuFoodAPI.Controllers;
 
+/// <summary>
+/// Endpoints for the food trucks
+/// </summary>
 [ApiController]
 [Route("api/foodtruck")]
 public class FoodTruckController : ControllerBase
@@ -19,6 +22,12 @@ public class FoodTruckController : ControllerBase
     private readonly IFoodTruckService _foodTruckService;
     private readonly IValidator<FoodTruckRegistry> _foodTruckValidator;
 
+    /// <summary>
+    /// Food truck controller constructor
+    /// </summary>
+    /// <param name="logger">The logger</param>
+    /// <param name="foodTruckService">The food truck service</param>
+    /// <param name="foodTruckValidator">The food truck validator</param>
     public FoodTruckController(ILogger<FoodTruckController> logger,
         IFoodTruckService foodTruckService,
         IValidator<FoodTruckRegistry> foodTruckValidator)
@@ -37,7 +46,7 @@ public class FoodTruckController : ControllerBase
     [HttpGet]
     [RateLimit(PeriodInSec = 60, Limit = 30)]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<FoodTruckDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetAllFoodTrucks()
     {
@@ -56,7 +65,7 @@ public class FoodTruckController : ControllerBase
     [RateLimit(PeriodInSec = 60, Limit = 30)]
     [FoodTruckExistsFilter("id")]
     [Produces("application/json")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(FoodTruckDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> GetFoodTruckById(Guid id)
@@ -79,7 +88,7 @@ public class FoodTruckController : ControllerBase
     [HttpGet("{id}/image/home")]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
     [FoodTruckExistsFilter("id")]
-    [Produces("application/octet-stream", "application/json")]
+    [Produces("image/png", "application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
@@ -88,7 +97,7 @@ public class FoodTruckController : ControllerBase
         var image = await _foodTruckService.GetFoodTruckHomeBanner(id);
         if (image == null)
             return NotFound("Image could not be found");
-        return File(image.Blob, "application/octet-stream");
+        return File(image.Blob, "image/png");
     }
 
     /// <summary>
@@ -102,7 +111,7 @@ public class FoodTruckController : ControllerBase
     [HttpGet("{id}/image/page")]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
     [FoodTruckExistsFilter("id")]
-    [Produces("application/octet-stream", "application/json")]
+    [Produces("image/png", "application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
@@ -111,7 +120,7 @@ public class FoodTruckController : ControllerBase
         var image = await _foodTruckService.GetFoodTruckPageBanner(id);
         if (image == null)
             return NotFound("Image could not be found");
-        return File(image.Blob, "application/octet-stream");
+        return File(image.Blob, "image/png");
     }
     
     /// <summary>
@@ -127,6 +136,7 @@ public class FoodTruckController : ControllerBase
     [HttpPost]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
+    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -160,6 +170,7 @@ public class FoodTruckController : ControllerBase
     [Authorize]
     [FoodTruckExistsFilter("id")]
     [FoodTruckManagerFilter("id")]
+    [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
