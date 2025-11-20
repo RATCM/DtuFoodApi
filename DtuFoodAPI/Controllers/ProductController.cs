@@ -80,6 +80,63 @@ public class ProductController : ControllerBase
         
         return Ok(product);
     }
+
+    /// <summary>
+    /// Gets the image of a specific product from a food truck
+    /// </summary>
+    /// <param name="truckId">The food truck id</param>
+    /// <param name="productName">The product name</param>
+    /// <returns>The product image</returns>
+    /// <response code="200">If the request was successful</response>
+    /// <response code="404">If the product or food truck was not found</response>
+    /// <response code="429">If the rate limit is exceeded</response>
+    [HttpGet("{productName}/image")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
+    [FoodTruckExistsFilter("truckId")]
+    [Produces("image/png", "application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> GetProductImageByTruckIdAndProductName(Guid truckId, string productName)
+    {
+        var image = await _productService.GetProductImage(truckId, productName);
+        if (image == null)
+            return NotFound("Image could not be found");
+        return File(image.Blob, "image/png");
+    }
+    
+    /// <summary>
+    /// Set the image of a specific product from a food truck
+    /// </summary>
+    /// <param name="truckId">The food truck id</param>
+    /// <param name="productName">The product name</param>
+    /// <param name="file">The image</param>
+    /// <returns>No Content</returns>
+    /// <response code="204">If the request was successful</response>
+    /// <response code="404">If the product or food truck was not found</response>
+    /// <response code="429">If the rate limit is exceeded</response>
+    [HttpPut("{productName}/image")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
+    [FoodTruckExistsFilter("truckId")]
+    [Produces("image/png", "application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> UpdateProductImageByTruckIdAndProductName(
+        Guid truckId,
+        string productName,
+        IFormFile file)
+    {
+        using var ms = new MemoryStream();
+        
+        await file.CopyToAsync(ms);
+        byte[] blob = ms.ToArray();
+        var updated = await _productService.UpdateProductImage(truckId, productName, blob);
+        if (updated is null) 
+            return NotFound();
+
+        return NoContent();
+    }
     
     /// <summary>
     /// Creates a product for a food truck
