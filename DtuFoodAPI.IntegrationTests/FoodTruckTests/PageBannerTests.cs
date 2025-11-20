@@ -8,10 +8,10 @@ using SixLabors.ImageSharp;
 
 namespace DtuFoodAPI.IntegrationTests.FoodTruckTests;
 
-public class HomeBannerTests : TestClass
+public class PageBannerTests : TestClass
 {
     [Test]
-    public async Task Get_HomeBanner_FailsWhenNotExists()
+    public async Task Get_PageBanner_FailsWhenNotExists()
     {
         // Arrange
         await AuthService.LoginAsAdmin();
@@ -26,7 +26,7 @@ public class HomeBannerTests : TestClass
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
         
         // Act
-        var response = await FoodTruckService.GetFoodTruckHomeBanner(postTruckResponseData!.Id);
+        var response = await FoodTruckService.GetFoodTruckPageBanner(postTruckResponseData!.Id);
 
         //Assert
         Assert.Multiple(() =>
@@ -37,7 +37,7 @@ public class HomeBannerTests : TestClass
     }
 
     [Test]
-    public async Task Get_HomeBanner_SucceedsWhenExists()
+    public async Task Get_PageBanner_SucceedsWhenExists()
     {
         // Arrange
         await AuthService.LoginAsAdmin();
@@ -48,7 +48,6 @@ public class HomeBannerTests : TestClass
             GpsLongitude = 0.2f,
         };
         var imageData = await File.ReadAllBytesAsync(@"TestData\Images\IMG_1.jpg");
-
         var postTruckResponse = await FoodTruckService.CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
 
@@ -59,10 +58,10 @@ public class HomeBannerTests : TestClass
             Email = Admin.Email
         });
         
-        var putImageResponse = await FoodTruckService.SetFoodTruckHomeBanner(postTruckResponseData!.Id, imageData);
+        var putImageResponse = await FoodTruckService.SetFoodTruckPageBanner(postTruckResponseData!.Id, imageData);
 
         // Act
-        var getImageResponse = await FoodTruckService.GetFoodTruckHomeBanner(postTruckResponseData.Id);
+        var getImageResponse = await FoodTruckService.GetFoodTruckPageBanner(postTruckResponseData.Id);
 
         // Assert
         Assert.Multiple(() =>
@@ -72,9 +71,9 @@ public class HomeBannerTests : TestClass
             Assert.That(getImageResponse.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         });
     }
-
+    
     [Test]
-    public async Task Put_HomeBanner_ConvertsImageToPng()
+    public async Task Put_PageBanner_ConvertsImageToPng()
     {
         // Arrange
         await AuthService.LoginAsAdmin();
@@ -94,8 +93,8 @@ public class HomeBannerTests : TestClass
         });
         
         // Act
-        await FoodTruckService.SetFoodTruckHomeBanner(postTruckResponseData!.Id, imageData);
-        var getImageResponse = await FoodTruckService.GetFoodTruckHomeBanner(postTruckResponseData!.Id);
+        await FoodTruckService.SetFoodTruckPageBanner(postTruckResponseData!.Id, imageData);
+        var getImageResponse = await FoodTruckService.GetFoodTruckPageBanner(postTruckResponseData!.Id);
         var getImageResponseData = await getImageResponse.Content.ReadAsStreamAsync();
 
         var format = await Image.DetectFormatAsync(getImageResponseData);
@@ -105,7 +104,7 @@ public class HomeBannerTests : TestClass
     }
     
     [Test]
-    public async Task Put_HomeBanner_ResizesImage()
+    public async Task Put_PageBanner_ResizesImage()
     {
         // Arrange
         await AuthService.LoginAsAdmin();
@@ -125,8 +124,8 @@ public class HomeBannerTests : TestClass
         });
         
         // Act
-        await FoodTruckService.SetFoodTruckHomeBanner(postTruckResponseData!.Id, imageData);
-        var getImageResponse = await FoodTruckService.GetFoodTruckHomeBanner(postTruckResponseData!.Id);
+        await FoodTruckService.SetFoodTruckPageBanner(postTruckResponseData!.Id, imageData);
+        var getImageResponse = await FoodTruckService.GetFoodTruckPageBanner(postTruckResponseData!.Id);
         await using var getImageResponseData = await getImageResponse.Content.ReadAsStreamAsync();
 
         using var image = await Image.LoadAsync(getImageResponseData);
@@ -134,7 +133,7 @@ public class HomeBannerTests : TestClass
         // Assert
         Assert.Multiple(() =>
         {
-            Assert.That(image.Width, Is.EqualTo(200));
+            Assert.That(image.Width, Is.EqualTo(1000));
             Assert.That(image.Height, Is.EqualTo(200));
         });
     }

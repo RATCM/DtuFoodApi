@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DtuFoodAPI.Controllers;
 
-// TODO: Add user registration
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase

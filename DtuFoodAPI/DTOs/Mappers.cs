@@ -1,3 +1,4 @@
+using System.Globalization;
 using DtuFoodAPI.Models;
 
 namespace DtuFoodAPI.DTOs;
@@ -14,6 +15,16 @@ public static class Mappers
             FoodTrucks = user.FoodTrucks.Select(x => x.Id).ToList()
         };
     }
+    
+    public static async Task<UserDto> ToDto(this Task<User> user)
+    {
+        return (await user).ToDto();
+    }
+    
+    public static async ValueTask<UserDto> ToDto(this ValueTask<User> user)
+    {
+        return (await user).ToDto();
+    }
 
     public static FoodTruckDto ToDto(this FoodTruck truck)
     {
@@ -27,6 +38,16 @@ public static class Mappers
             Availability = truck.Availability.Select(x => x.ToDto()).ToList()
         };
     }
+    
+    public static async Task<FoodTruckDto> ToDto(this Task<FoodTruck> truck)
+    {
+        return (await truck).ToDto();
+    }
+    
+    public static async ValueTask<FoodTruckDto?> ToDto(this ValueTask<FoodTruck?> truck)
+    {
+        return (await truck)?.ToDto();
+    }
 
     public static ProductDto ToDto(this Product product)
     {
@@ -34,9 +55,19 @@ public static class Mappers
         {
             Name = product.Name,
             Description = product.Description,
-            Price = product.Price,
+            Price = product.Price.ToString(CultureInfo.InvariantCulture),
             Category = product.Category,
         };
+    }
+    
+    public static async Task<ProductDto> ToDto(this Task<Product> product)
+    {
+        return (await product).ToDto();
+    }
+    
+    public static async ValueTask<ProductDto?> ToDto(this ValueTask<Product?> product)
+    {
+        return (await product)?.ToDto();
     }
 
     public static AvailabilityDto ToDto(this Availability availability)
@@ -49,4 +80,13 @@ public static class Mappers
         };
     }
     
+    public static async Task<AvailabilityDto> ToDto(this Task<Availability> availability)
+    {
+        return (await availability).ToDto();
+    }
+    
+    public static async ValueTask<AvailabilityDto?> ToDto(this ValueTask<Availability?> availability)
+    {
+        return (await availability)?.ToDto();
+    }    
 }

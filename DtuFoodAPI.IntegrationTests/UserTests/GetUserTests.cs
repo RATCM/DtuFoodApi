@@ -12,7 +12,7 @@ public class GetUserTests : TestClass
     public async Task Get_AllUsers_FailsWhenUnauthorized()
     {
         // Act
-        var response = await Client.GetAsync("/api/user");
+        var response = await UserService.GetAllUsers();
 
         //Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
@@ -22,7 +22,8 @@ public class GetUserTests : TestClass
     public async Task Get_AllUsers_SucceedsWhenUnauthorized()
     {
         // Arrange
-        var token = await LoginAsAdmin();
+        var token = await AuthService.LoginAsAdmin();
+        //var token = await LoginAsAdmin();
         using var getUsersRequest = new HttpRequestMessage(HttpMethod.Get, "/api/user");
         getUsersRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken!);
         
@@ -37,7 +38,8 @@ public class GetUserTests : TestClass
     public async Task Get_UserById_FailsWhenUserNotExists()
     {
         // Act
-        var response = await Client.GetAsync($"/api/user/{Guid.NewGuid()}");
+        var response = await UserService.GetUser(Guid.NewGuid());
+        //var response = await Client.GetAsync($"/api/user/{Guid.NewGuid()}");
 
         //Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
@@ -47,10 +49,12 @@ public class GetUserTests : TestClass
     public async Task Get_UserById_SucceedsWhenUserExists()
     {
         // Arrange
-        await LoginAsAdmin();
+        await AuthService.LoginAsAdmin();
+        //await LoginAsAdmin();
         
         var registry = new UserRegistry() { Email = "some@email", Password = "some password" };
-        var userResponse = await CreateUser(registry);
+        //var userResponse = await CreateUser(registry);
+        var userResponse = await UserService.CreateUser(registry);
         var data = await userResponse.Content.ReadFromJsonAsync<UserDto>();
         
         // Act
@@ -70,7 +74,8 @@ public class GetUserTests : TestClass
     public async Task Get_AllUsers_FailsWhenRateLimitExceeded()
     {
         // Arrange
-        var jwtToken = await LoginAsAdmin();
+        var jwtToken = await AuthService.LoginAsAdmin();
+        //var jwtToken = await LoginAsAdmin();
         List<HttpResponseMessage> responses = [];
         
         // Act
@@ -100,7 +105,8 @@ public class GetUserTests : TestClass
         // Act
         for (int i = 0; i < 31; i++)
         {
-            responses.Add(await Client.GetAsync($"/api/user/{adminId}"));
+            responses.Add(await UserService.GetUser(adminId));
+            //responses.Add(await Client.GetAsync($"/api/user/{adminId}"));
         }
         
         // Assert

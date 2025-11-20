@@ -4,6 +4,7 @@ public record ProductDto
 {
     public required string Name { get; init; }
     public required string Description { get; init; }
-    public required decimal Price { get; init; } // We use decimal instead of float to prevent precision errors
+    // We use string instead of decimal to make it compatible with the frontend
+    public required string Price { get; init; } 
     public required string? Category { get; init; }
 }

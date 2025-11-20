@@ -4,6 +4,7 @@ using DtuFoodAPI.Controllers;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
+using DtuFoodAPI.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -30,7 +31,7 @@ public class FoodTruckTests
         
         _tokenGenerator = Substitute.For<ITokenGenerator>();
         
-        _sut = new FoodTruckController(_logger, _foodTruckService);
+        _sut = new FoodTruckController(_logger, _foodTruckService, new FoodTruckRegistryValidator());
         
 
     }
@@ -76,29 +77,26 @@ public class FoodTruckTests
     public async Task GetAllFoodTrucks_ReturnsOK_WhenSuccessful()
     {
         //Arrange
-        var foodTrucks = new List<Models.FoodTruck>();
+        var foodTrucks = new List<FoodTruckDto>();
         
-        var foodTruck1 = new Models.FoodTruck()
+        var foodTruck1 = new FoodTruckDto()
         {
             Id = Guid.NewGuid(),
             Name = "Burger Truck",
             GpsLatitude = 55.6761f,
             GpsLongitude = 12.5683f,
-            Availability   = new List<Availability>(),
-            Products = new List<Models.Product>(),
-            Managers = new List<User>(),
-            PageBanner = null
+            Availability   = new List<AvailabilityDto>(),
+            Products = new List<ProductDto>(),
         };
-        var foodTruck2 = new Models.FoodTruck()
+        var foodTruck2 = new FoodTruckDto()
         {
             Id = Guid.NewGuid(),
             Name = "Slik Truck",
             GpsLatitude = 56.6761f,
             GpsLongitude = 16.5683f,
-            Availability   = new List<Availability>(),
-            Products = new List<Models.Product>(),
-            Managers = new List<User>(),
-            PageBanner = null,
+            Availability   = new List<AvailabilityDto>(),
+            Products = new List<ProductDto>(),
+
         };
         foodTrucks.Add(foodTruck1); foodTrucks.Add(foodTruck2);
         
@@ -115,7 +113,7 @@ public class FoodTruckTests
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
         
         //assert correct amt of objects
-        var trucks = OKFoodTrucks?.Value as IEnumerable<Models.FoodTruck>;
+        var trucks = OKFoodTrucks?.Value as IEnumerable<FoodTruckDto>;
         Assert.That(trucks, Is.Not.Null);
         Assert.That(trucks.Count(), Is.EqualTo(foodTrucks.Count()));
     }
@@ -124,16 +122,14 @@ public class FoodTruckTests
     public async Task GetFoodTruckById_ReturnsOK_WhenSuccessful()
     {
         //Arrange
-        var foodTruck = new Models.FoodTruck()
+        var foodTruck = new FoodTruckDto()
         {
             Id = Guid.NewGuid(),
             Name = "Cola Truck",
             GpsLatitude = 60.6761f,
             GpsLongitude = 36.5683f,
-            Availability   = new List<Availability>(),
-            Products = new List<Models.Product>(),
-            Managers = new List<User>(),
-            PageBanner = null
+            Availability   = new List<AvailabilityDto>(),
+            Products = new List<ProductDto>(),
         };
         
         _foodTruckService.GetFoodTruckById(foodTruck.Id)
@@ -160,16 +156,14 @@ public class FoodTruckTests
             GpsLongitude = 13.37f
         };
 
-        var updated = new DtuFoodAPI.Models.FoodTruck
+        var updated = new FoodTruckDto
         {
             Id = id,
             Name = registry.Name,
             GpsLatitude = registry.GpsLatitude,
             GpsLongitude = registry.GpsLongitude,
-            Availability = new List<Availability>(),
-            Products = new List<DtuFoodAPI.Models.Product>(),
-            Managers = new List<User>(),
-            PageBanner = null
+            Availability = new List<AvailabilityDto>(),
+            Products = new List<ProductDto>(),
         };
 
         _foodTruckService.UpdateFoodTruck(id, registry)
@@ -200,7 +194,7 @@ public class FoodTruckTests
         };
 
         _foodTruckService.UpdateFoodTruck(id, registry)
-            .Returns((DtuFoodAPI.Models.FoodTruck?)null);
+            .Returns((FoodTruckDto?)null);
 
         // Act
         var result = await _sut.UpdateFoodTruck(id, registry);

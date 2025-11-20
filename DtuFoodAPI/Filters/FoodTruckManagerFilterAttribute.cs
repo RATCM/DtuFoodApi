@@ -32,6 +32,7 @@ public class FoodTruckManagerFilterAttribute : TypeFilterAttribute
     public FoodTruckManagerFilterAttribute(string key) : base(typeof(FoodTruckManagerFilterService))
     {
         Arguments = [key];
+        Order = 2;
     }
 }
 
@@ -54,15 +55,36 @@ public class FoodTruckManagerFilterService : IAsyncResourceFilter
     {
         var idClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
         if (idClaim is null)
+        {
+            context.Result = new UnauthorizedResult();
             return;
+        }
 
         Guid userId = Guid.Parse(idClaim.Value);
 
-        var truckIdStr = context.HttpContext.GetRouteValue(_key) as string;
-        
-        if (truckIdStr == null) return;
+        // This should generally never happen,
+        // and it doesn't make sense to try and cover
+        // this in tests
+        if (context.HttpContext.GetRouteValue(_key) is not string truckIdStr)
+            throw new Exception("Truck id not matching route parameter");
         
         var truckIdGuid = Guid.Parse(truckIdStr);
+
+        if (!await _dbContext.FoodTrucks.AnyAsync(x => x.Id == truckIdGuid))
+        {
+            var errorResponse = new
+            {
+                Status = (int)HttpStatusCode.NotFound,
+                Message = $"Food truck with id {truckIdGuid} not found"
+            };
+
+            context.Result = new JsonResult(errorResponse)
+            {
+                StatusCode = (int)HttpStatusCode.NotFound,
+            };
+
+            return;
+        }
 
         var isManager = await _dbContext.FoodTrucks
             .Include(x => x.Managers)

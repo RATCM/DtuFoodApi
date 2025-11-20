@@ -34,6 +34,7 @@ public class FoodTruckMangerOrAdminFilterAttribute : TypeFilterAttribute
     public FoodTruckMangerOrAdminFilterAttribute(string key) : base(typeof(FoodTruckManagerFilterService))
     {
         Arguments = [key];
+        Order = 2;
     }
 }
 
