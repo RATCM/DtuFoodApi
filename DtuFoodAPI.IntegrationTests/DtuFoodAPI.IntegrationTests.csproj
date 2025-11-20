@@ -16,6 +16,7 @@
         <PackageReference Include="NUnit" Version="4.2.2"/>
         <PackageReference Include="NUnit.Analyzers" Version="4.4.0"/>
         <PackageReference Include="NUnit3TestAdapter" Version="4.6.0"/>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,6 +25,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\DtuFoodAPI\DtuFoodAPI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="TestData\Images\*" />
+      <Content Include="TestData\Images\*">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

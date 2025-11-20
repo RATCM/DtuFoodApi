@@ -17,7 +17,7 @@ public class FoodTruck
 
     public Image? PageBanner { get; set; }
     public Image? HomeBanner { get; set; }
-    public required ICollection<Product> Products { get; init; }
-    public required ICollection<User> Managers { get; init; }
-    public required ICollection<Availability> Availability { get; init; }
+    public required ICollection<Product> Products { get; init; } = [];
+    public required ICollection<User> Managers { get; init; } = [];
+    public required ICollection<Availability> Availability { get; init; } = [];
 }

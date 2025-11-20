@@ -6,6 +6,8 @@ using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
+using DtuFoodAPI.Validation;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
@@ -36,9 +38,15 @@ builder.Services.AddSingleton<IGuidGenerator, GuidGenerator>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IFoodTruckService, FoodTruckService>();
+builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
 builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 builder.Services.AddScoped<IGuidGenerator, GuidGenerator>();
 
+// Validators
+builder.Services.AddScoped<IValidator<UserRegistry>, UserRegistryValidator>();
+builder.Services.AddScoped<IValidator<FoodTruckRegistry>, FoodTruckRegistryValidator>();
+builder.Services.AddScoped<IValidator<ProductRegistry>, ProductRegistryValidator>();
+builder.Services.AddScoped<IValidator<AvailabilityRegistry>, AvailabilityRegistryValidator>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -46,13 +54,17 @@ builder.Services.AddControllers()
         // Prevents infinite cycles when serializing to json
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
+builder.Services.AddOpenApiDocument();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseOpenApi();
+
+    app.UseSwaggerUi();
+    //app.MapOpenApi();
 }
 
 app.UseAuthentication();

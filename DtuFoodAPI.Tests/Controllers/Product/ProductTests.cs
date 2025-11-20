@@ -1,4 +1,7 @@
-﻿namespace DtuFoodAPI.Tests.Controllers.Product;
+﻿using System.Globalization;
+using DtuFoodAPI.Validation;
+
+namespace DtuFoodAPI.Tests.Controllers.Product;
 using System.Collections;
 using System.Security.Claims;
 using DtuFoodAPI.Controllers;
@@ -27,7 +30,8 @@ public class ProductTests
         _productService = Substitute.For<IProductService>();
         _tokenGenerator = Substitute.For<ITokenGenerator>();
         
-        _sut = new ProductController(_logger, _productService);
+        
+        _sut = new ProductController(_logger, _productService, new ProductRegistryValidator());
     }
     
     [Test]
@@ -38,36 +42,32 @@ public class ProductTests
         {
             Name = "Cola",
             Description = "Smager godt",
-            Price = 100,
+            Price = "100",
         };
         
-        var foodTruck = new Models.FoodTruck()
+        var foodTruck = new FoodTruckDto()
         {
             Id = Guid.NewGuid(),
             Name = "Cola Truck",
             GpsLatitude = 60.6761f,
             GpsLongitude = 36.5683f,
-            Availability   = new List<Availability>(),
-            Products = new List<Models.Product>(),
-            Managers = new List<User>(),
-            PageBanner = null
+            Availability   = [],
+            Products = []
         };
         
-        var product = new Models.Product()
+        var product = new ProductDto()
         {
-            FoodTruck = foodTruck,
             Name = registry.Name,
             Description = registry.Description,
-            Price = registry.Price,
+            Price = registry.Price.ToString(CultureInfo.InvariantCulture),
             Category = registry.Category,
-            Image = null,
         };
 
-        _productService.CreateProduct(product.FoodTruck.Id,registry)
+        _productService.CreateProduct(foodTruck.Id,registry)
             .Returns(product);
         
         //Act
-        var result = await _sut.CreateProduct(product.FoodTruck.Id,registry);
+        var result = await _sut.CreateProduct(foodTruck.Id,registry);
         
         //Assert
         //assert correct controller responmse
@@ -78,7 +78,7 @@ public class ProductTests
     public async Task GetAllProductsByTruck_ReturnsOK_WhenSuccessful()
     {
         //Arrange
-        var products = new List<Models.Product>();
+        var products = new List<ProductDto>();
         
         var foodTruck = new Models.FoodTruck()
         {
@@ -92,23 +92,19 @@ public class ProductTests
             PageBanner = null
         };
         
-        var product1 = new Models.Product()
+        var product1 = new ProductDto()
         {
-            FoodTruck = foodTruck,
             Name = "Fanta",
             Description = "Appelsin smag",
-            Price = 20,
+            Price = "20",
             Category = null,
-            Image = null
         };
-        var product2 = new Models.Product()
+        var product2 = new ProductDto()
         {
-            FoodTruck = foodTruck,
             Name = "Cola",
             Description = "Cola smag",
-            Price = 30,
+            Price = "30",
             Category = null,
-            Image = null
         };
         
         products.Add(product1); products.Add(product2);
@@ -125,7 +121,7 @@ public class ProductTests
         Assert.That(result, Is.InstanceOf<OkObjectResult>());
         
         //assert correct amt of objects
-        var prods = OKProducts?.Value as IEnumerable<Models.Product>;
+        var prods = OKProducts?.Value as IEnumerable<ProductDto>;
         Assert.That(prods, Is.Not.Null);
         Assert.That(prods.Count(), Is.EqualTo(products.Count()));
     }
@@ -134,26 +130,22 @@ public class ProductTests
     public async Task GetProductByTruckIdAndProductName_ReturnsOK_WhenSuccessful()
     {
         //Arrange
-        var foodTruck = new Models.FoodTruck()
+        var foodTruck = new FoodTruckDto()
         {
             Id = Guid.NewGuid(),
             Name = "Cola Truck",
             GpsLatitude = 60.6761f,
             GpsLongitude = 36.5683f,
-            Availability   = new List<Availability>(),
-            Products = new List<Models.Product>(),
-            Managers = new List<User>(),
-            PageBanner = null
+            Availability   = [],
+            Products = []
         };
         
-        var product1 = new Models.Product()
+        var product1 = new ProductDto()
         {
-            FoodTruck = foodTruck,
             Name = "Fanta",
             Description = "Appelsin smag",
-            Price = 20,
+            Price = "20",
             Category = null,
-            Image = null
         };
         
         _productService.GetProductByTruckIdAndProductName(foodTruck.Id,"Fanta")
@@ -172,35 +164,26 @@ public class ProductTests
     {
         // Arrange
         var truckId = Guid.NewGuid();
-        var productId = Guid.NewGuid(); 
+        var productName = "Cola"; 
         var registry = new ProductRegistry
         {
             Name = "Cola",
             Description = "Ny beskrivelse",
-            Price = 42
+            Price = "42"
         };
 
-        var updated = new Models.Product
+        var updated = new ProductDto
         {
-            FoodTruck = new Models.FoodTruck
-            {
-                Id = truckId, Name = "Truck", GpsLatitude = 1, GpsLongitude = 2,
-                Availability = new List<Availability>(),
-                Products     = new List<Models.Product>(),
-                Managers     = new List<User>(),
-                PageBanner        = null,
-            },
             Name = registry.Name,
             Description = registry.Description,
-            Price = registry.Price,
+            Price = registry.Price.ToString(CultureInfo.InvariantCulture),
             Category = registry.Category,
-            Image = null,
         };
         
-        _productService.UpdateProduct(truckId, productId.ToString(), registry).Returns(updated);
+        _productService.UpdateProduct(truckId, productName, registry).Returns(updated);
 
         // Act
-        var result = await _sut.UpdateProduct(truckId, productId, registry);
+        var result = await _sut.UpdateProduct(truckId, productName, registry);
         var ok = result as OkObjectResult;
 
         // Assert
@@ -214,13 +197,13 @@ public class ProductTests
     {
 
         var truckId = Guid.NewGuid();
-        var productId = Guid.NewGuid();
+        var productName = "some name";
 
-        _productService.DeleteProduct(truckId, productId.ToString())
+        _productService.DeleteProduct(truckId, productName)
             .Returns(true);
 
         // Act
-        var result = await _sut.DeleteProduct(truckId, productId);
+        var result = await _sut.DeleteProduct(truckId, productName);
 
         // Assert
         Assert.That(result, Is.InstanceOf<NoContentResult>());
@@ -231,13 +214,13 @@ public class ProductTests
     {
         // Arrange
         var truckId = Guid.NewGuid();
-        var productId = Guid.NewGuid();
+        var productName = "some name";
 
-        _productService.DeleteProduct(truckId, productId.ToString())
+        _productService.DeleteProduct(truckId, productName)
             .Returns(false);
 
         // Act
-        var result = await _sut.DeleteProduct(truckId, productId);
+        var result = await _sut.DeleteProduct(truckId, productName);
 
         // Assert
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
@@ -248,20 +231,20 @@ public class ProductTests
     {
         // Arrange
         var truckId = Guid.NewGuid();
-        var productId = Guid.NewGuid();
+        var productName = "Cola";
 
         var registry = new ProductRegistry
         {
             Name = "Cola",
             Description = "Opdateret beskrivelse",
-            Price = 55
+            Price = "55"
         };
 
-        _productService.UpdateProduct(truckId, productId.ToString(), registry)
-            .Returns((Models.Product?)null);
+        _productService.UpdateProduct(truckId, productName, registry)
+            .Returns((ProductDto?)null);
 
         // Act
-        var result = await _sut.UpdateProduct(truckId, productId, registry);
+        var result = await _sut.UpdateProduct(truckId, productName, registry);
 
         // Assert
         Assert.That(result, Is.InstanceOf<NotFoundResult>());
