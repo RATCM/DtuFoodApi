@@ -28,7 +28,7 @@ public class UserService : IUserService
             Id = _guidGenerator.NewGuid(),
             Email = userRegistry.Email,
             PasswordHash = _userPasswordHasher.HashPassword(userRegistry, userRegistry.Password),
-            Role = UserRole.Manager,
+            Role = Enum.Parse<UserRole>(userRegistry.UserRole),
             FoodTrucks = new List<FoodTruck>()
         };
 
@@ -73,6 +73,7 @@ public class UserService : IUserService
         
         user.Email = userRegistry.Email;
         user.PasswordHash = _userPasswordHasher.HashPassword(userRegistry, userRegistry.Password);
+        user.Role = Enum.Parse<UserRole>(userRegistry.UserRole);
         
         await _dbContext.SaveChangesAsync(cancellationToken);
         return user.ToDto();

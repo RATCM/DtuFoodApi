@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -44,6 +45,10 @@ internal class TestApplicationFactory : WebApplicationFactory<Program>
             });
         });
 
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment("Testing");
+        builder.ConfigureAppConfiguration(context =>
+        {
+            context.AddUserSecrets<Program>();
+        });
     }
 }

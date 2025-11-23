@@ -45,12 +45,17 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<List<FoodTruckDto>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.FoodTrucks.Select(x => x.ToDto()).ToListAsync(cancellationToken);
+        return await _dbContext.FoodTrucks.Include(x => x.Products)
+            .Select(x => x.ToDto()).ToListAsync(cancellationToken);
     }
 
     public async Task<FoodTruckDto?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken).ToDto();
+        return await _dbContext.FoodTrucks
+            .Include(x => x.Products)
+            .FirstAsync(x => x.Id == id, cancellationToken)
+            .ToDto();
+        //.FindAsync([id], cancellationToken: cancellationToken).ToDto();
     }
 
     public async Task<Image?> GetFoodTruckHomeBanner(Guid id, CancellationToken cancellationToken = default)
@@ -69,6 +74,13 @@ public class FoodTruckService : IFoodTruckService
         return truck?.PageBanner;
     }
 
+    public async Task<List<UserDto>> GetManagers(Guid id, CancellationToken cancellationToken = default)
+    {
+        var truck = await _dbContext.FoodTrucks
+            .Include(x => x.Managers)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return truck?.Managers.Select(x => x.ToDto()).ToList() ?? [];
+    }
     
     public async Task<FoodTruckDto?> UpdateFoodTruck(Guid id, FoodTruckRegistry foodTruckRegistry, CancellationToken cancellationToken = default)
     {
@@ -90,7 +102,8 @@ public class FoodTruckService : IFoodTruckService
         using var msIn = new MemoryStream(image);
         using var img = await SixLabors.ImageSharp.Image.LoadAsync(msIn, cancellationToken);
         
-        img.Mutate(x => x.Resize(200, 200));
+        img.Mutate(x => x.Resize(200 , 200));
+
 
         using var msOut = new MemoryStream();
         await img.SaveAsPngAsync(msOut, cancellationToken);
@@ -174,6 +187,23 @@ public class FoodTruckService : IFoodTruckService
         return foodTruck.ToDto();
     }
 
+    public async Task<bool> RemoveFoodTruckManager(Guid id, Guid userId, CancellationToken cancellationToken = default)
+    {
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.Managers)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+        var user = foodTruck?.Managers.FirstOrDefault(x => x.Id == userId);
+
+        if (foodTruck is null || user is null) return false;
+        
+        foodTruck.Managers.Remove(user);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+
     public async Task<bool> DeleteFoodTruck(Guid id, CancellationToken cancellationToken = default)
     {
         var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
@@ -230,6 +260,14 @@ public interface IFoodTruckService
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The page banner</returns>
     Task<Image?> GetFoodTruckPageBanner(Guid id, CancellationToken cancellationToken = default);
+   
+    /// <summary>
+    /// Gets managers from a food truck with a specific id
+    /// </summary>
+    /// <param name="id">The food truck id</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>The list of managers</returns>
+    Task<List<UserDto>> GetManagers(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Updates the food truck with a specific id with the data in the food truck registry
@@ -275,6 +313,17 @@ public interface IFoodTruckService
     /// <param name="cancellationToken">The cancellation token</param>
     /// <returns>The food truck DTO</returns>
     Task<FoodTruckDto?> AddFoodTruckManager(Guid id,
+        Guid userId,
+        CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    /// Removes a manager to the food truck
+    /// </summary>
+    /// <param name="id">The food truck id</param>
+    /// <param name="userId">The user id</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>True if the manager was removed, false if the food truck or manager was not found</returns>
+    Task<bool> RemoveFoodTruckManager(Guid id,
         Guid userId,
         CancellationToken cancellationToken = default);
     

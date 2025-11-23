@@ -122,6 +122,8 @@ public class FoodTruckController : ControllerBase
             return NotFound("Image could not be found");
         return File(image.Blob, "image/png");
     }
+
+
     
     /// <summary>
     /// Creates a new food truck
@@ -189,19 +191,31 @@ public class FoodTruckController : ControllerBase
         
         return Ok(updated);
     }
+    
+    [HttpGet("{id}/manager")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
+    [FoodTruckExistsFilter("id")]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(List<UserDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> GetManagers(Guid id)
+    {
+        return Ok(await _foodTruckService.GetManagers(id));
+    }
 
     /// <summary>
     /// Adds a user as a manager to a specific food truck
     /// </summary>
     /// <param name="id">The food truck id</param>
-    /// <param name="manager">The manager registry</param>
+    /// <param name="userId">The user id</param>
     /// <returns>No Content</returns>
     /// <response code="204">If the manager was added</response>
     /// <response code="401">If an invalid (or none) access token was provided</response>
     /// <response code="403">If the user is not an admin</response>
     /// <response code="404">If the food truck or user was not found</response>
     /// <response code="429">If the rate limit is exceeded</response>
-    [HttpPut("{id}/manager")]
+    [HttpPut("{id}/manager/{userId:guid}")]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     [FoodTruckExistsFilter("id")]
@@ -210,14 +224,33 @@ public class FoodTruckController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> AddFoodTruckManager(Guid id, [FromBody] FoodTruckManagerRegistry manager)
+    public async Task<IActionResult> AddFoodTruckManager(Guid id, Guid userId)
     {
-        var foodTruck = await _foodTruckService.AddFoodTruckManager(id, manager.Id);
+        var foodTruck = await _foodTruckService.AddFoodTruckManager(id, userId);
         if (foodTruck is null)
             return NotFound();
 
         return NoContent();
     }
+    
+    [HttpDelete("{id}/manager/{userId:guid}")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [FoodTruckExistsFilter("id")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> RemoveFoodTruckManager(Guid id, Guid userId)
+    {
+        var deleted = await _foodTruckService.RemoveFoodTruckManager(id, userId);
+        if (!deleted)
+            return NotFound();
+
+        return NoContent();
+    }
+
     
     /// <summary>
     /// Updates/sets the food truck home banner
@@ -274,7 +307,7 @@ public class FoodTruckController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<IActionResult> UpdateFoodTruckPageBanner(Guid id, IFormFile file)
+    public async Task<IActionResult> UpdateFoodTruckPageBanner(Guid id, [FromForm] IFormFile file)
     {
         using var ms = new MemoryStream();
         

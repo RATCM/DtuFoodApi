@@ -35,7 +35,7 @@ public class ProductService : IProductService
         };
         
         var result = await _dbContext.Products.AddAsync(newProduct, cancellationToken: cancellationToken);
-        
+        foodTruck.Products.Add(newProduct);
         await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
 
         return result.Entity.ToDto();
@@ -97,6 +97,25 @@ public class ProductService : IProductService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return product.Image;
+    }
+
+    public async Task<bool> DeleteProductImage(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
+    {
+        var product = await _dbContext.Products
+            .Include(x => x.Image)
+            .FirstOrDefaultAsync(x =>
+                    x.FoodTruck.Id == foodTruckId &&
+                    x.Name == name,
+                cancellationToken);
+        
+        if (product is null) return false;
+        
+        if (product.Image is not null)
+            _dbContext.Images.Remove(product.Image);
+
+        product.Image = null;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     public async Task<ProductDto?> UpdateProduct(Guid foodTruckId, string name, ProductRegistry productRegistry,
@@ -200,6 +219,11 @@ public interface IProductService
         string name, 
         byte[] image,
         CancellationToken cancellationToken = default);
+    
+    Task<bool> DeleteProductImage(Guid foodTruckId,
+        string name, 
+        CancellationToken cancellationToken = default);
+
     
     /// <summary>
     /// Updates the product with a specific id with the data in the product registry

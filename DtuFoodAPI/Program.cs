@@ -10,6 +10,8 @@ using DtuFoodAPI.Validation;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -64,11 +66,23 @@ if (app.Environment.IsDevelopment())
     app.UseOpenApi();
 
     app.UseSwaggerUi();
+
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider
+        .GetRequiredService<DtuFoodDbContext>();
+
+    dbContext.Database.Migrate();
     //app.MapOpenApi();
 }
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+if (app.Environment.IsDevelopment())
+{
+    //app.MapControllers().AllowAnonymous();
+    app.MapControllers();
+}
+else
+    app.MapControllers();
 app.Run();

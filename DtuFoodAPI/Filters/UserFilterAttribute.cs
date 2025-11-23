@@ -1,5 +1,6 @@
 using System.Net;
 using System.Security.Claims;
+using DtuFoodAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -9,6 +10,7 @@ namespace DtuFoodAPI.Filters;
 public class UserFilterAttribute : AuthorizeAttribute, IAsyncActionFilter
 {
     private readonly string _key;
+    private readonly bool _allowAdmins;
     
     /// <summary>
     /// When applied to an endpoint or controller, it checks
@@ -30,14 +32,17 @@ public class UserFilterAttribute : AuthorizeAttribute, IAsyncActionFilter
     /// If the id is in the [Route] attribute instead (on the controller),
     /// then you should reference the id on the route attribute instead
     /// </remarks>
-    public UserFilterAttribute(string key)
+    public UserFilterAttribute(string key, bool allowAdmins = false)
     {
         _key = key;
+        _allowAdmins = allowAdmins;
     }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        Console.WriteLine("UserFilter...");
         var userIdClaim = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+        Console.WriteLine($"Id claim: {userIdClaim?.Value}");
         if (userIdClaim is null)
         {
             var errorResponse = new
@@ -55,6 +60,7 @@ public class UserFilterAttribute : AuthorizeAttribute, IAsyncActionFilter
 
         var userId = Guid.Parse(userIdClaim.Value);
         var providedIdStr = context.HttpContext.GetRouteValue(_key) as string;
+        Console.WriteLine($"Provided id str: {providedIdStr}");
         if (providedIdStr is null)
         {
             var errorResponse = new
@@ -68,9 +74,10 @@ public class UserFilterAttribute : AuthorizeAttribute, IAsyncActionFilter
             };
             return;
         }
+        var isAdmin = context.HttpContext.User.IsInRole(nameof(UserRole.Admin));
         var providedId = Guid.Parse(providedIdStr);
-
-        if (userId != providedId)
+        Console.WriteLine(isAdmin);
+        if (userId != providedId && !_allowAdmins && isAdmin)
         {
             var errorResponse = new
             {

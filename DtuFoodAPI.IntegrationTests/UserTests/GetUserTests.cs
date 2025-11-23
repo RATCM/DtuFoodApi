@@ -50,10 +50,8 @@ public class GetUserTests : TestClass
     {
         // Arrange
         await AuthService.LoginAsAdmin();
-        //await LoginAsAdmin();
         
-        var registry = new UserRegistry() { Email = "some@email", Password = "some password" };
-        //var userResponse = await CreateUser(registry);
+        var registry = new UserRegistry() { Email = "some@email", Password = "Some password1!" };
         var userResponse = await UserService.CreateUser(registry);
         var data = await userResponse.Content.ReadFromJsonAsync<UserDto>();
         

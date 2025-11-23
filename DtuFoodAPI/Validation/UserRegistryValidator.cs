@@ -1,4 +1,5 @@
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Models;
 using FluentValidation;
 
 namespace DtuFoodAPI.Validation;
@@ -24,5 +25,8 @@ public class UserRegistryValidator : AbstractValidator<UserRegistry>
                 else if(!(x.Any(char.IsLower) && x.Any(char.IsUpper)))
                     y.AddFailure("Password must contain both lowercase and uppercase letters");
             });
+
+        RuleFor(x => x.UserRole)
+            .IsEnumName(typeof(UserRole));
     }
 }
