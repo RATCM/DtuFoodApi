@@ -1,5 +1,6 @@
 using DtuFoodAPI.Database;
 using DtuFoodAPI.DTOs;
+using DtuFoodAPI.Extensions;
 using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -99,24 +100,21 @@ public class FoodTruckService : IFoodTruckService
         byte[] image,
         CancellationToken cancellationToken = default)
     {
-        using var msIn = new MemoryStream(image);
-        using var img = await SixLabors.ImageSharp.Image.LoadAsync(msIn, cancellationToken);
-        
-        img.Mutate(x => x.Resize(200 , 200));
-
-
-        using var msOut = new MemoryStream();
-        await img.SaveAsPngAsync(msOut, cancellationToken);
-        byte[] newImg = msOut.ToArray();
-        
         var foodTruck = await _dbContext.FoodTrucks
             .Include(x => x.HomeBanner)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (foodTruck is null) return null;
 
+        // Remove old image
         if (foodTruck.HomeBanner is not null)
             _dbContext.Images.Remove(foodTruck.HomeBanner);
+
+        using var img = await image.ToImageAsync(cancellationToken);
+        
+        img.Mutate(x => x.Resize(200 , 200));
+
+        var newImg = await img.ToPngAsync(cancellationToken);
 
         var imageEntry = _dbContext.Images.Add(new Image
         {
@@ -131,27 +129,42 @@ public class FoodTruckService : IFoodTruckService
         return foodTruck.HomeBanner;
     }
     
+    public async Task<bool> DeleteFoodTruckHomeBanner(Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.HomeBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var image = foodTruck?.HomeBanner;
+        
+        if (image is null) return false;
+
+        _dbContext.Images.Remove(image);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
+    }
+    
     public async Task<Image?> UpdateFoodTruckPageBanner(Guid id,
         byte[] image,
         CancellationToken cancellationToken = default)
     {
-        using var msIn = new MemoryStream(image);
-        using var img = await SixLabors.ImageSharp.Image.LoadAsync(msIn, cancellationToken);
-        
-        img.Mutate(x => x.Resize(1000 , 200));
-
-        using var msOut = new MemoryStream();
-        await img.SaveAsPngAsync(msOut, cancellationToken);
-        byte[] newImg = msOut.ToArray();
-
         var foodTruck = await _dbContext.FoodTrucks
             .Include(x => x.PageBanner)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (foodTruck is null) return null;
-
+        
+        // Remove old image
         if (foodTruck.PageBanner is not null)
             _dbContext.Images.Remove(foodTruck.PageBanner);
+
+        using var img = await image.ToImageAsync(cancellationToken);
+        
+        img.Mutate(x => x.Resize(1000 , 200));
+
+        var newImg = await img.ToPngAsync(cancellationToken);
 
         var imageEntry = _dbContext.Images.Add(new Image
         {
@@ -164,6 +177,23 @@ public class FoodTruckService : IFoodTruckService
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return foodTruck.PageBanner;
+    }
+    
+    public async Task<bool> DeleteFoodTruckPageBanner(Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.PageBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var image = foodTruck?.PageBanner;
+        
+        if (image is null) return false;
+
+        _dbContext.Images.Remove(image);
+        
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return true;
     }
 
     public async Task<FoodTruckDto?> AddFoodTruckManager(Guid id, 
@@ -210,7 +240,7 @@ public class FoodTruckService : IFoodTruckService
             .Include(x => x.HomeBanner)
             .Include(x => x.PageBanner)
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-        
+
         if (foodTruck is null) return false;
 
         // Remove the home and page banner
@@ -218,9 +248,10 @@ public class FoodTruckService : IFoodTruckService
             _dbContext.Images.Remove(foodTruck.HomeBanner);
         if (foodTruck.PageBanner is not null)
             _dbContext.Images.Remove(foodTruck.PageBanner);
-
+        
         _dbContext.FoodTrucks.Remove(foodTruck);
-        await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+        var i = await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
+        Console.WriteLine(i);
         return true;
     }
 
@@ -302,6 +333,15 @@ public interface IFoodTruckService
     Task<Image?> UpdateFoodTruckHomeBanner(Guid id,
         byte[] image,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes the home banner of the food truck with a specific id
+    /// </summary>
+    /// <param name="id">The food truck id</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>True if the image was deleted, false otherwise</returns>
+    Task<bool> DeleteFoodTruckHomeBanner(Guid id,
+        CancellationToken cancellationToken = default);
     
     /// <summary>
     /// Updates the page banner from a food truck with a specific id
@@ -313,6 +353,15 @@ public interface IFoodTruckService
     /// <remarks>This also resizes the image</remarks>
     Task<Image?> UpdateFoodTruckPageBanner(Guid id,
         byte[] image,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Deletes the page banner of the food truck with a specific id
+    /// </summary>
+    /// <param name="id">The food truck id</param>
+    /// <param name="cancellationToken">The cancellation token</param>
+    /// <returns>True if the image was deleted, false otherwise</returns>
+    Task<bool> DeleteFoodTruckPageBanner(Guid id,
         CancellationToken cancellationToken = default);
 
     /// <summary>
