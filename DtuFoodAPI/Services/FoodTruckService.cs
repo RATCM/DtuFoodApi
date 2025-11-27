@@ -206,8 +206,18 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<bool> DeleteFoodTruck(Guid id, CancellationToken cancellationToken = default)
     {
-        var foodTruck = await _dbContext.FoodTrucks.FindAsync([id], cancellationToken: cancellationToken);
+        var foodTruck = await _dbContext.FoodTrucks
+            .Include(x => x.HomeBanner)
+            .Include(x => x.PageBanner)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        
         if (foodTruck is null) return false;
+
+        // Remove the home and page banner
+        if (foodTruck.HomeBanner is not null)
+            _dbContext.Images.Remove(foodTruck.HomeBanner);
+        if (foodTruck.PageBanner is not null)
+            _dbContext.Images.Remove(foodTruck.PageBanner);
 
         _dbContext.FoodTrucks.Remove(foodTruck);
         await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
