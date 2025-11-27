@@ -52,11 +52,11 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<FoodTruckDto?> GetFoodTruckById(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.FoodTrucks
+        var truck = await _dbContext.FoodTrucks
             .Include(x => x.Products)
-            .FirstAsync(x => x.Id == id, cancellationToken)
-            .ToDto();
-        //.FindAsync([id], cancellationToken: cancellationToken).ToDto();
+            .Include(x => x.Availability)
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        return truck?.ToDto();
     }
 
     public async Task<Image?> GetFoodTruckHomeBanner(Guid id, CancellationToken cancellationToken = default)
