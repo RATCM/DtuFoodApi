@@ -54,11 +54,7 @@ public class DeleteFoodTruckTests : TestClass
         var createTruckResponseData = await createTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
         
         // Make the sample user a manager for good measure
-        await FoodTruckService.AddFoodTruckManager(createTruckResponseData!.Id, new FoodTruckManagerRegistry()
-        {
-            Id = createUserResponseData!.Id,
-            Email = createUserResponseData.Email
-        });
+        await FoodTruckService.AddFoodTruckManager(createTruckResponseData!.Id, createUserResponseData!.Id);
         
         // Login as the sample user
         await AuthService.LoginUser(sampleUser);

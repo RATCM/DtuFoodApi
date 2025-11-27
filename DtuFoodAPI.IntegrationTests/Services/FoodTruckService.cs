@@ -103,13 +103,12 @@ public sealed class FoodTruckService
         return await _client.GetAsync($"/api/foodtruck/{id}/image/page");
     }
     
-    public async Task<HttpResponseMessage> AddFoodTruckManager(Guid id, FoodTruckManagerRegistry registry, JwtToken? bearer = null)
+    public async Task<HttpResponseMessage> AddFoodTruckManager(Guid id, Guid userId, JwtToken? bearer = null)
     {
         bearer ??= Bearer;
         
-        using var addManagerRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/foodtruck/{id}/manager");
+        using var addManagerRequest = new HttpRequestMessage(HttpMethod.Put, $"/api/foodtruck/{id}/manager/{userId}");
         addManagerRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer?.AccessToken);
-        addManagerRequest.Content = JsonContent.Create(registry);
 
         return await _client.SendAsync(addManagerRequest);
     }

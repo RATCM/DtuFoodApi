@@ -49,6 +49,6 @@ internal class TestApplicationFactory : WebApplicationFactory<Program>
             db.Database.EnsureCreated();
         });
 
-        builder.UseEnvironment("Development");
+        builder.UseEnvironment("Testing");
     }
 }

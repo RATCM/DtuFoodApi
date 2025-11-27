@@ -5,6 +5,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
       <UserSecretsId>9589a470-cb28-4efc-ab87-d53d74de97f9</UserSecretsId>
+      <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
   </PropertyGroup>
 
     <ItemGroup>
@@ -29,6 +30,16 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="DtuFoodAPI.IntegrationTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="DTOs\FoodTruckUpdate.cs" />
     </ItemGroup>
     
     <PropertyGroup>

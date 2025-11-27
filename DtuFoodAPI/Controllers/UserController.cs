@@ -5,7 +5,9 @@ using DtuFoodAPI.DTOs;
 using DtuFoodAPI.Filters;
 using DtuFoodAPI.Models;
 using DtuFoodAPI.Services;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,17 +23,21 @@ public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
     private readonly IUserService _userService;
-
+    private readonly IValidator<UserRegistry> _userValidator;
+    
     /// <summary>
     /// User controller constructor
     /// </summary>
     /// <param name="logger">The logger</param>
     /// <param name="userService">The user service</param>
+    /// <param name="userValidator">The user validator</param>
     public UserController(ILogger<UserController> logger,
-        IUserService userService)
+        IUserService userService,
+        IValidator<UserRegistry> userValidator)
     {
         _logger = logger;
         _userService = userService;
+        _userValidator = userValidator;
     }
     
     /// <summary>
@@ -77,6 +83,30 @@ public class UserController : ControllerBase
     }
 
     /// <summary>
+    /// Gets a user by their id
+    /// </summary>
+    /// <param name="email">The user id</param>
+    /// <returns>The user</returns>
+    /// <response code="200">If the request was successful</response>
+    /// <response code="404">If the user was not found</response>
+    /// <response code="429">If the rate limit is exceeded</response>
+    [HttpGet("email/{email}")]
+    [RateLimit(PeriodInSec = 60, Limit = 30)]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> GetUserByEmail(string email)
+    {
+        var user = await _userService.GetUserByEmail(email);
+        if (user is null)
+            return NotFound();
+        
+        return Ok(user);
+    }
+    
+    
+    /// <summary>
     /// Creates a new user
     /// </summary>
     /// <param name="user">The user registry</param>
@@ -90,11 +120,21 @@ public class UserController : ControllerBase
     [Authorize(Policy = AuthPolicies.AdminOnly)]
     [Produces("application/json")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> CreateUser([FromBody] UserRegistry user)
     {
+        // Validate user
+        var validationResult = await _userValidator.ValidateAsync(user);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+        
+        // Check if the email is unique
+        if (await _userService.UserEmailExists(user.Email))
+            return BadRequest("User with the same email already exists");
+        
         var created = await _userService.CreateUser(user);
         _logger.LogInformation("User created, id: {id}", created.Id);
         
@@ -122,6 +162,16 @@ public class UserController : ControllerBase
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UserRegistry user)
     {
+        // Validate user
+        var validationResult = await _userValidator.ValidateAsync(user);
+        if (!validationResult.IsValid)
+            return BadRequest(validationResult.Errors);
+
+        // Check if the email has changed, and that the new email is unique
+        var oldUser = await _userService.GetUserById(id);
+        if(oldUser!.Email != user.Email && await _userService.UserEmailExists(user.Email))
+            return BadRequest("User with the same email already exists");
+        
         var updated = await _userService.UpdateUser(id, user);
         if (updated is null)
             throw new Exception("Unable to update user");
@@ -142,7 +192,7 @@ public class UserController : ControllerBase
     [HttpDelete("{id}")]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
     [Authorize]
-    [UserFilter("id")]
+    [UserFilter("id", allowAdmins: true)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

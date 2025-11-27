@@ -135,8 +135,38 @@ public class ProductController : ControllerBase
         if (updated is null) 
             return NotFound();
 
+        _logger.LogInformation("Updated product image");
         return NoContent();
     }
+    
+    /// <summary>
+    /// Deletes the image of a specific product from a food truck
+    /// </summary>
+    /// <param name="truckId">The food truck id</param>
+    /// <param name="productName">The product name</param>
+    /// <returns>No Content</returns>
+    /// <response code="204">If the request was successful</response>
+    /// <response code="404">If the product or food truck was not found</response>
+    /// <response code="429">If the rate limit is exceeded</response>
+    [HttpDelete("{productName}/image")]
+    [RateLimit(PeriodInSec = 60, Limit = 10)]
+    [FoodTruckExistsFilter("truckId")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
+    public async Task<IActionResult> DeleteProductImageByTruckIdAndProductName(
+        Guid truckId,
+        string productName)
+    {
+        var updated = await _productService.DeleteProductImage(truckId, productName);
+        if (!updated) 
+            return NotFound();
+
+        _logger.LogInformation("Deleted product image, truckId: {truckId}, name: {productName}",
+            truckId, productName);
+        return NoContent();
+    }
+
     
     /// <summary>
     /// Creates a product for a food truck

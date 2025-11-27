@@ -83,11 +83,7 @@ public class UpdateFoodTruckTests : TestClass
         var createTruckResponseData = await createTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
         
         // Add admin as manager
-        await FoodTruckService.AddFoodTruckManager(createTruckResponseData!.Id, new FoodTruckManagerRegistry()
-        {
-            Id = Admin.Id,
-            Email = Admin.Email
-        });
+        await FoodTruckService.AddFoodTruckManager(createTruckResponseData!.Id, Admin.Id);
         
         var updatedTruckRegistry = new FoodTruckRegistry()
         {
@@ -122,11 +118,7 @@ public class UpdateFoodTruckTests : TestClass
         var createTruckResponseData = await createTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
         
         // Add admin as manager
-        await FoodTruckService.AddFoodTruckManager(createTruckResponseData!.Id, new FoodTruckManagerRegistry()
-        {
-            Id = Admin.Id,
-            Email = Admin.Email
-        });
+        await FoodTruckService.AddFoodTruckManager(createTruckResponseData!.Id, Admin.Id);
         
         var updatedTruckRegistry = new FoodTruckRegistry()
         {

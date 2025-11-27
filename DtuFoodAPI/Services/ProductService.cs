@@ -35,7 +35,7 @@ public class ProductService : IProductService
         };
         
         var result = await _dbContext.Products.AddAsync(newProduct, cancellationToken: cancellationToken);
-        
+        foodTruck.Products.Add(newProduct);
         await _dbContext.SaveChangesAsync(cancellationToken: cancellationToken);
 
         return result.Entity.ToDto();
@@ -99,6 +99,25 @@ public class ProductService : IProductService
         return product.Image;
     }
 
+    public async Task<bool> DeleteProductImage(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
+    {
+        var product = await _dbContext.Products
+            .Include(x => x.Image)
+            .FirstOrDefaultAsync(x =>
+                    x.FoodTruck.Id == foodTruckId &&
+                    x.Name == name,
+                cancellationToken);
+        
+        if (product is null) return false;
+        
+        if (product.Image is not null)
+            _dbContext.Images.Remove(product.Image);
+
+        product.Image = null;
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+
     public async Task<ProductDto?> UpdateProduct(Guid foodTruckId, string name, ProductRegistry productRegistry,
         CancellationToken cancellationToken = default)
     {
@@ -120,11 +139,19 @@ public class ProductService : IProductService
     public async Task<bool> DeleteProduct(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
     {
         // Find the product by its composite key (FoodTruckId + Name)
-        var product = await _dbContext.Products.FindAsync(
-            [foodTruckId, name], cancellationToken: cancellationToken);
-
+        var product = await _dbContext.Products
+            .Include(x => x.Image)
+            .FirstOrDefaultAsync(x =>
+                    x.FoodTruck.Id == foodTruckId &&
+                    x.Name == name,
+                cancellationToken);
+        
         if (product is null)
             return false;
+
+        // Delete product image
+        if (product.Image is not null)
+            _dbContext.Images.Remove(product.Image);
         
         _dbContext.Products.Remove(product);
         
@@ -200,6 +227,11 @@ public interface IProductService
         string name, 
         byte[] image,
         CancellationToken cancellationToken = default);
+    
+    Task<bool> DeleteProductImage(Guid foodTruckId,
+        string name, 
+        CancellationToken cancellationToken = default);
+
     
     /// <summary>
     /// Updates the product with a specific id with the data in the product registry

@@ -52,11 +52,7 @@ public class PageBannerTests : TestClass
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
 
         // We add ourselves as a manager
-        var addManagerResponse = await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, new FoodTruckManagerRegistry()
-        {
-            Id = Admin.Id,
-            Email = Admin.Email
-        });
+        var addManagerResponse = await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, Admin.Id);
         
         var putImageResponse = await FoodTruckService.SetFoodTruckPageBanner(postTruckResponseData!.Id, imageData);
 
@@ -86,11 +82,7 @@ public class PageBannerTests : TestClass
         var imageData = await File.ReadAllBytesAsync(Path.Combine("TestData", "Images", "IMG_1.jpg"));
         var postTruckResponse = await FoodTruckService.CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
-        await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, new FoodTruckManagerRegistry()
-        {
-            Id = Admin.Id,
-            Email = Admin.Email
-        });
+        await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, Admin.Id);
         
         // Act
         await FoodTruckService.SetFoodTruckPageBanner(postTruckResponseData!.Id, imageData);
@@ -117,11 +109,7 @@ public class PageBannerTests : TestClass
         var imageData = await File.ReadAllBytesAsync(Path.Combine("TestData", "Images", "IMG_1.jpg"));
         var postTruckResponse = await FoodTruckService.CreateFoodTruck(truckRegistry);
         var postTruckResponseData = await postTruckResponse.Content.ReadFromJsonAsync<FoodTruckDto>();
-        await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, new FoodTruckManagerRegistry()
-        {
-            Id = Admin.Id,
-            Email = Admin.Email
-        });
+        await FoodTruckService.AddFoodTruckManager(postTruckResponseData!.Id, Admin.Id);
         
         // Act
         await FoodTruckService.SetFoodTruckPageBanner(postTruckResponseData!.Id, imageData);
