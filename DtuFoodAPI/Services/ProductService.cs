@@ -139,11 +139,19 @@ public class ProductService : IProductService
     public async Task<bool> DeleteProduct(Guid foodTruckId, string name, CancellationToken cancellationToken = default)
     {
         // Find the product by its composite key (FoodTruckId + Name)
-        var product = await _dbContext.Products.FindAsync(
-            [foodTruckId, name], cancellationToken: cancellationToken);
-
+        var product = await _dbContext.Products
+            .Include(x => x.Image)
+            .FirstOrDefaultAsync(x =>
+                    x.FoodTruck.Id == foodTruckId &&
+                    x.Name == name,
+                cancellationToken);
+        
         if (product is null)
             return false;
+
+        // Delete product image
+        if (product.Image is not null)
+            _dbContext.Images.Remove(product.Image);
         
         _dbContext.Products.Remove(product);
         
