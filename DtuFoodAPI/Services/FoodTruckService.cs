@@ -46,7 +46,9 @@ public class FoodTruckService : IFoodTruckService
 
     public async Task<List<FoodTruckDto>> GetAllFoodTrucks(CancellationToken cancellationToken = default)
     {
-        return await _dbContext.FoodTrucks.Include(x => x.Products)
+        return await _dbContext.FoodTrucks
+            .Include(x => x.Products)
+            .Include(x => x.Availability)
             .Select(x => x.ToDto()).ToListAsync(cancellationToken);
     }
 
