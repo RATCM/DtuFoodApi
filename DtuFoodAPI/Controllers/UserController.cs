@@ -153,8 +153,8 @@ public class UserController : ControllerBase
     /// <response code="429">If the rate limit is exceeded</response>
     [HttpPut("{id}")]
     [RateLimit(PeriodInSec = 60, Limit = 10)]
-    [Authorize]
-    [UserFilter("id")]
+    [Authorize(Policy = AuthPolicies.AdminOnly)]
+    [UserFilter("id", allowAdmins: true)]
     [Produces("application/json")]
     [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
