@@ -77,7 +77,8 @@ public class UserFilterAttribute : AuthorizeAttribute, IAsyncActionFilter
         var isAdmin = context.HttpContext.User.IsInRole(nameof(UserRole.Admin));
         var providedId = Guid.Parse(providedIdStr);
         Console.WriteLine(isAdmin);
-        if (userId != providedId && !_allowAdmins && isAdmin)
+        var canAccess = userId == providedId || (isAdmin && _allowAdmins);
+        if ( !canAccess )
         {
             var errorResponse = new
             {
